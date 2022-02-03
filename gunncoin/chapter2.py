@@ -1,4 +1,7 @@
-import requests
+import hashlib
 
-response = requests.get("https://api.coinbase.com/v2/prices/spot?currency=USD")
-print(response.text)
+input_bytes = b"backpack"
+
+output = hashlib.sha256(input_bytes)
+
+print(output.hexdigest())
