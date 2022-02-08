@@ -35,8 +35,11 @@ class Server:
                 decoded_data = data.decode("utf8").strip()  # <4>
 
                 try:
+                    print("TRYY load")
                     message = BaseSchema().loads(decoded_data)  # <5>
+                    print(message)
                 except MarshmallowError:
+                    print("Unreadable")
                     logger.info("Received unreadable message", peer=writer)
                     break
 
