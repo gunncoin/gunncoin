@@ -25,6 +25,7 @@ class P2PProtocol:
 
     @staticmethod
     async def send_message(writer, message):
+        logger.info(f"sending message {message}")
         writer.write(message.encode() + b"\n")
 
     async def handle_message(self, message, writer):
@@ -35,6 +36,7 @@ class P2PProtocol:
             "transaction": self.handle_transaction,
         }
 
+        logger.info(message)
         handler = message_handlers.get(message["name"])
         if not handler:
             raise P2PError("Missing handler for message")

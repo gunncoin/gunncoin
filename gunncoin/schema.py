@@ -33,6 +33,14 @@ class Block(Schema):
         block = data.copy()
         block.pop("hash")
 
+        print("\n")
+        print(data)
+        print("\n")
+        print(data['hash'])
+        print('\n')
+        print(json.dumps(block,sort_keys=True))
+        print("\n")
+
         if data["hash"] != json.dumps(block, sort_keys=True):
             raise ValidationError("Fraudulent block: hash is wrong")
 

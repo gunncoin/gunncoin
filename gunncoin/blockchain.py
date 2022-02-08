@@ -28,6 +28,7 @@ class Blockchain(object):
             previous_hash=self.last_block["hash"] if self.last_block else None,
             nonce=format(random.getrandbits(64), "x"),
             target=self.target,
+            index= self.last_block["index"] + 1 if self.last_block else 0,
             timestamp=time(),
         )
 
@@ -38,7 +39,7 @@ class Blockchain(object):
 
     @staticmethod
     def create_block(
-        height, transactions, previous_hash, nonce, target, timestamp=None
+        height, transactions, previous_hash, nonce, target, index, timestamp=None,
     ):
         block = {
             "height": height,
@@ -46,6 +47,7 @@ class Blockchain(object):
             "previous_hash": previous_hash,
             "nonce": nonce,
             "target": target,
+            "index": index,
             "timestamp": timestamp or time(),
         }
 
@@ -115,4 +117,4 @@ class Blockchain(object):
             await asyncio.sleep(0)
 
         self.chain.append(new_block)
-        logger.info("Found a new block: ", new_block)
+        logger.info("Found a new block: " + json.dumps(new_block))

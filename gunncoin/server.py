@@ -14,7 +14,7 @@ class Server:
     def __init__(self, blockchain, connection_pool, p2p_protocol):
         self.blockchain = blockchain  # <1>
         self.connection_pool = connection_pool
-        self.p2p_protocol = p2p_protocol
+        self.p2p_protocol = p2p_protocol(self)
         self.external_ip = None
         self.external_port = None
 
@@ -32,7 +32,6 @@ class Server:
             try:
                 # Wait forever on new data to arrive
                 data = await reader.readuntil(b"\n")  # <3>
-
                 decoded_data = data.decode("utf8").strip()  # <4>
 
                 try:
@@ -48,7 +47,7 @@ class Server:
                 self.connection_pool.add_peer(writer)
 
                 # ...and handle the message
-                await self.p2p_protocol.handle_message(message, writer)  # <6>
+                await self.p2p_protocol.handle_message(message["message"], writer)  # <6>
 
                 await writer.drain()
                 if writer.is_closing():
