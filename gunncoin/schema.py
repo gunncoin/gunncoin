@@ -1,5 +1,6 @@
 import json
 from time import time
+from gunncoin.blockchain import Blockchain
 
 from marshmallow import Schema, fields, validates_schema, ValidationError
 
@@ -14,10 +15,9 @@ class Transaction(Schema):
     class Meta:
         ordered = True
 
-
 class Block(Schema):
     mined_by = fields.Str(required=False)
-    transactions = fields.Nested(Transaction(), many=True)
+    transactions = fields.List(fields.Nested(Transaction()))
     height = fields.Int(required=True)
     target = fields.Str(required=True)
     hash = fields.Str(required=True)
@@ -33,15 +33,12 @@ class Block(Schema):
         block = data.copy()
         block.pop("hash")
 
-        print("\n")
-        print(data)
-        print("\n")
-        print(data['hash'])
-        print('\n')
-        print(json.dumps(block,sort_keys=True))
-        print("\n")
+        print(Blockchain.hash(block))
+        print(data["hash"])
 
-        if data["hash"] != json.dumps(block, sort_keys=True):
+        # a valid block would have the transaction hash be equal to 
+
+        if data["hash"] != Blockchain.hash(block):
             raise ValidationError("Fraudulent block: hash is wrong")
 
 

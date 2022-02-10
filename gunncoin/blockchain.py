@@ -5,6 +5,7 @@ import math
 import random
 from hashlib import sha256
 from time import time
+from gunncoin.transactions import block_reward_transaction, create_transaction, validate_transaction
 
 import structlog
 
@@ -19,27 +20,23 @@ class Blockchain(object):
 
         # Create the genesis block
         logger.info("Creating genesis block")
-        self.chain.append(self.new_block())
+        self.chain.append(self.make_random_block())
 
-    def new_block(self):
+    def make_random_block(self):
         block = self.create_block(
             height=len(self.chain),
             transactions=self.pending_transactions,
             previous_hash=self.last_block["hash"] if self.last_block else None,
             nonce=format(random.getrandbits(64), "x"),
             target=self.target,
-            index= self.last_block["index"] + 1 if self.last_block else 0,
             timestamp=time(),
         )
-
-        # Reset the list of pending transactions
-        self.pending_transactions = []
 
         return block
 
     @staticmethod
     def create_block(
-        height, transactions, previous_hash, nonce, target, index, timestamp=None,
+        height, transactions, previous_hash, nonce, target, timestamp=None,
     ):
         block = {
             "height": height,
@@ -47,13 +44,11 @@ class Blockchain(object):
             "previous_hash": previous_hash,
             "nonce": nonce,
             "target": target,
-            "index": index,
             "timestamp": timestamp or time(),
         }
 
         # Get the hash of this new block, and add it to the block
-        block_string = json.dumps(block, sort_keys=True).encode()
-        block["hash"] = sha256(block_string).hexdigest()
+        block["hash"] = Blockchain.hash(block)
         return block
 
     @staticmethod
@@ -74,6 +69,12 @@ class Blockchain(object):
     def add_block(self, block):
         # TODO: Add proper validation logic here!
         self.chain.append(block)
+
+    def add_transaction(self, transaction):
+        if(validate_transaction(transaction)):
+            self.pending_transactions.append(transaction)
+        else:
+            logger.error("Invalid transaction: " + json.dumps(transaction))
 
     def recalculate_target(self, block_index):
         """
@@ -108,13 +109,21 @@ class Blockchain(object):
                 return self.chain[index:]
 
     async def mine_new_block(self):
-        self.recalculate_target(self.last_block["index"] + 1)
+        self.recalculate_target(self.last_block["height"] + 1)
+
+        reward_transaction = block_reward_transaction("my public key")
+        self.add_transaction(reward_transaction)
+
         while True:
-            new_block = self.new_block()
+            new_block = self.make_random_block()
             if self.valid_block(new_block):
                 break
 
             await asyncio.sleep(0)
 
+        # we found a valid block, reward owner
+        # transaction {sender: "0", recipient: "idk", amount 1}
+        # 
+        self.pending_transactions = []
         self.chain.append(new_block)
         logger.info("Found a new block: " + json.dumps(new_block))

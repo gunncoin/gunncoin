@@ -36,6 +36,22 @@ def create_transaction(
 
     return tx
 
+def block_reward_transaction(receiver: str):
+    """
+    Create a transaction to reward block finder
+
+    :param receiver: The Receiver's public key
+    """
+
+    tx = {
+        "sender": "0",
+        "receiver": receiver,
+        "amount": 1,
+        "timestamp": int(time()),
+        "signature": ""
+    }
+
+    return tx
 
 def validate_transaction(tx: dict) -> bool:
     """
