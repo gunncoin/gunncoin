@@ -33,11 +33,6 @@ class Block(Schema):
         block = data.copy()
         block.pop("hash")
 
-        print(Blockchain.hash(block))
-        print(data["hash"])
-
-        # a valid block would have the transaction hash be equal to 
-
         if data["hash"] != Blockchain.hash(block):
             raise ValidationError("Fraudulent block: hash is wrong")
 

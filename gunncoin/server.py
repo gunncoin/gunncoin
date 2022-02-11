@@ -30,12 +30,9 @@ class Server:
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
         while True:
             try:
-                logger.info("start try")
                 # Wait forever on new data to arrive
                 data = await reader.readuntil(b"\n")  # <3>
-                logger.info("got data")
                 decoded_data = data.decode("utf8").strip()  # <4>
-                logger.info("encoded data")
 
                 try:
                     message = BaseSchema().loads(decoded_data)  # <5>
@@ -49,21 +46,12 @@ class Server:
                 # Let's add the peer to our connection pool
                 self.connection_pool.add_peer(writer)
 
-                logger.info("starting p2p await")
-
                 # ...and handle the message
                 await self.p2p_protocol.handle_message(message["message"], writer)  # <6>
-
-                logger.info("passed p2p await, starting drain")
-
                 await writer.drain()
-
-                logger.info("passed drain")
 
                 if writer.is_closing():
                     break
-
-                logger.info("not closed so we are still going")
 
 
             except (asyncio.exceptions.IncompleteReadError, ConnectionError):

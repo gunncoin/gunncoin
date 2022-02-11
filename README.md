@@ -1,3 +1,3 @@
 # gunncoin
 
-we
+The crypto you always wanted at Gunn

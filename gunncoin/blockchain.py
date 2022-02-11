@@ -29,7 +29,7 @@ class Blockchain(object):
             previous_hash=self.last_block["hash"] if self.last_block else None,
             nonce=format(random.getrandbits(64), "x"),
             target=self.target,
-            timestamp=time(),
+            timestamp=int(time()),
         )
 
         return block
@@ -44,12 +44,18 @@ class Blockchain(object):
             "previous_hash": previous_hash,
             "nonce": nonce,
             "target": target,
-            "timestamp": timestamp or time(),
+            "timestamp": timestamp or int(time()),
         }
 
         # Get the hash of this new block, and add it to the block
         block["hash"] = Blockchain.hash(block)
         return block
+
+    @staticmethod
+    def verify_block_hash(block):
+        block_hash = block["hash"]
+        block.pop("hash")
+        return block_hash == Blockchain.hash(block)
 
     @staticmethod
     def hash(block):
