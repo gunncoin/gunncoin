@@ -16,7 +16,7 @@ class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.pending_transactions = []
-        self.target = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
         # Create the genesis block
         logger.info("Creating genesis block")
@@ -115,10 +115,8 @@ class Blockchain(object):
                 return self.chain[index:]
 
     async def mine_new_block(self):
+        logger.info("called")
         self.recalculate_target(self.last_block["height"] + 1)
-
-        reward_transaction = block_reward_transaction("my public key")
-        self.add_transaction(reward_transaction)
 
         while True:
             new_block = self.make_random_block()
@@ -127,9 +125,7 @@ class Blockchain(object):
 
             await asyncio.sleep(0)
 
-        # we found a valid block, reward owner
-        # transaction {sender: "0", recipient: "idk", amount 1}
-        # 
+        # we found a valid block, reward reset our pending_transactions and add it to our blockchain
         self.pending_transactions = []
         self.chain.append(new_block)
         logger.info("Found a new block: " + json.dumps(new_block))

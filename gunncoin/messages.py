@@ -63,7 +63,6 @@ class BaseSchema(Schema):
     meta = fields.Nested(MetaSchema())
     message = fields.Nested(MessageDisambiguation)
 
-
 def meta(ip, port, version="gunncoin-0.1"):
     return {
         "client": version,

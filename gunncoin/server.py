@@ -1,10 +1,12 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
+from gunncoin.peers import P2PProtocol
+from gunncoin.transactions import block_reward_transaction
 
 import structlog
 from marshmallow.exceptions import MarshmallowError
 
-from gunncoin.messages import BaseSchema
+from gunncoin.messages import BaseSchema, create_block_message, create_peers_message, create_ping_message
 from gunncoin.utils import get_external_ip
 
 logger = structlog.getLogger()  # <7>
@@ -15,7 +17,7 @@ class Server:
         self.blockchain = blockchain  # <1>
         self.connection_pool = connection_pool
         self.p2p_protocol = p2p_protocol(self)
-        self.external_ip = None
+        self.external_ip = "127.0.0.1"
         self.external_port = None
 
         if not (blockchain and connection_pool and p2p_protocol):
@@ -28,11 +30,16 @@ class Server:
         self.external_ip = await get_external_ip()  # <2>
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
+        logger.info("got a new connection")
+        logger.info(self.connection_pool.get_alive_peers(10))
         while True:
             try:
                 # Wait forever on new data to arrive
                 data = await reader.readuntil(b"\n")  # <3>
                 decoded_data = data.decode("utf8").strip()  # <4>
+
+                logger.info("Elmo got mail!")
+                logger.info(decoded_data)
 
                 try:
                     message = BaseSchema().loads(decoded_data)  # <5>
@@ -64,12 +71,58 @@ class Server:
         await writer.wait_closed()
         self.connection_pool.remove_peer(writer)  # <7>
 
+    async def connect_to_network(self):
+        try:
+            logger.info("TODO: Check hard coded nodes (discovery protocol), checking my local pc 10.0.0.130 for now")
+            
+            # Open a connection with a known node on the network
+            #reader, writer = await asyncio.open_connection("10.0.0.130", 8888)
+            reader, writer = await asyncio.open_connection("127.0.0.1", 8887)
+
+            # send them a ping message so that they give us an update
+            ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
+            await P2PProtocol.send_message(writer, ping_message)
+
+            # manually listen for connections
+            logger.info("manually listening for incoming messages")
+            await self.handle_connection(reader, writer)
+        except (asyncio.exceptions.IncompleteReadError, ConnectionError):
+                # An error happened, break out of the wait loop
+                logger.error("Failed to connect to the network")
+
     async def listen(self, hostname="0.0.0.0", port=8888):
         server = await asyncio.start_server(self.handle_connection, hostname, port)
         logger.info(f"Server listening on {hostname}:{port}")
 
-        self.external_ip = await self.get_external_ip()
-        self.external_port = 8888
+        self.external_port = port
+        #await self.get_external_ip()
+        logger.warning("using local ip")
+        self.external_ip = "127.0.0.1"
 
         async with server:
             await server.serve_forever()
+
+    async def start_mining(self, public_key: str):
+        count = 0
+        alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
+        while True:
+            try:
+                # reward ourselves for when we solve the block
+                reward_transaction = block_reward_transaction(alices_public)
+                self.blockchain.pending_transactions.append(reward_transaction)
+                await self.blockchain.mine_new_block()
+
+                block_message = create_block_message(self.external_ip, self.external_port, self.blockchain.chain[-1])
+                for peer in self.connection_pool.get_alive_peers(20):
+                    await P2PProtocol.send_message(
+                        peer[1],
+                        block_message,
+                    )
+
+                await asyncio.sleep(0)
+                count += 1
+                if count > 3:
+                    break
+            except Exception as e:
+                logger.error(e)
+                break

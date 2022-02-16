@@ -12,13 +12,9 @@ server = Server(blockchain, connection_pool, P2PProtocol)
 
 async def main():
     # Start the server
-    listen_task = asyncio.create_task(server.listen())
-    connect_task = asyncio.create_task(server.connect_to_network())
-    mining_task = asyncio.create_task(server.start_mining("Wallet address"))
+    listen_task = asyncio.create_task(server.listen(hostname="127.0.0.1", port=8887))
 
     await listen_task
-    await connect_task
-    await mining_task
     
 
 asyncio.run(main())
