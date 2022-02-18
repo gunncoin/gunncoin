@@ -1,5 +1,7 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
+from gunncoin.blockchain import Blockchain
+from gunncoin.connections import ConnectionPool
 from gunncoin.peers import P2PProtocol
 from gunncoin.transactions import block_reward_transaction
 
@@ -13,16 +15,16 @@ logger = structlog.getLogger()  # <7>
 
 
 class Server:
-    def __init__(self, blockchain, connection_pool, p2p_protocol):
+    def __init__(self, blockchain: Blockchain, connection_pool: ConnectionPool):
         self.blockchain = blockchain  # <1>
         self.connection_pool = connection_pool
-        self.p2p_protocol = p2p_protocol(self)
+        self.p2p_protocol = P2PProtocol(self)
         self.external_ip = "127.0.0.1"
         self.external_port = None
 
-        if not (blockchain and connection_pool and p2p_protocol):
+        if not (blockchain and connection_pool):
             logger.error(
-                "'blockchain', 'connection_pool', and 'p2p_protocol' must all be instantiated"
+                "'blockchain' and 'connection_pool' must all be instantiated"
             )
             raise Exception("Could not start")
 
@@ -105,6 +107,10 @@ class Server:
 
     async def start_mining(self, public_key: str):
         count = 0
+
+        await asyncio.sleep(5)
+        logger.info("START MINING")
+
         while True:
             try:
                 # reward ourselves for when we solve the block

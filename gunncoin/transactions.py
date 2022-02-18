@@ -60,13 +60,15 @@ def validate_transaction(tx: dict) -> bool:
     :return: <bool>
     """
 
-    public_key = tx["sender"]
+    data = tx.copy()
 
-    # We need to strip the "signature" key from the tx
-    signature = tx.pop("signature")
+    public_key = data["sender"]
+
+    # We need to strip the "signature" key from the data
+    signature = data.pop("signature")
     signature_bytes = HexEncoder.decode(signature)
 
-    tx_bytes = json.dumps(tx, sort_keys=True).encode("ascii")
+    tx_bytes = json.dumps(data, sort_keys=True).encode("ascii")
 
     # Generate a verifying key from the public key
     verify_key = VerifyKey(public_key, encoder=HexEncoder)

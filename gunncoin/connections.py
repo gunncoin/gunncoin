@@ -18,6 +18,10 @@ class ConnectionPool:
         port = writer.address["port"]
         return f"{ip}:{port}"  # <2>
 
+    @staticmethod
+    def compare_address(peer_address, writer):
+        return peer_address == ConnectionPool.get_address_string(writer)
+
     def add_peer(self, writer):
         address = self.get_address_string(writer)
         self.connection_pool[address] = writer

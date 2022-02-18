@@ -1,5 +1,6 @@
 import asyncio
 from gunncoin.blockchain import Blockchain
+from gunncoin.connections import ConnectionPool
 
 import structlog
 
@@ -20,9 +21,11 @@ class P2PError(Exception):
 
 class P2PProtocol:
     def __init__(self, server):
-        self.server = server
-        self.blockchain = server.blockchain
-        self.connection_pool = server.connection_pool
+        from gunncoin.server import Server
+
+        self.server: Server = server
+        self.blockchain: Blockchain = server.blockchain
+        self.connection_pool: ConnectionPool = server.connection_pool
 
     @staticmethod
     async def send_message(writer, message):
@@ -94,7 +97,6 @@ class P2PProtocol:
                             self.server.external_ip, self.server.external_port, tx
                         ),
                     )
-                    logger.info(peer[0])
                     logger.info("sent the transaction " + str( create_transaction_message(
                             self.server.external_ip, self.server.external_port, tx
                         )))
@@ -110,14 +112,18 @@ class P2PProtocol:
         block = message["payload"]
         if(not Blockchain.verify_block_hash(block)):
             logger.error("Block is invalid")
+            return
 
         # Give the block to the blockain to append if valid
         self.blockchain.add_block(block)
 
-        logger.info("added a new block?" + str(self.blockchain.chain))
-
         # Transmit the block to our peers
         for peer in self.connection_pool.get_alive_peers(20):
+
+            # Don't send it back to the guy who sent up the message
+            if(ConnectionPool.compare_address(peer[0], writer)):
+                continue
+
             await self.send_message(
                 peer[1],
                 create_block_message(
@@ -141,8 +147,6 @@ class P2PProtocol:
             len(self.connection_pool.get_alive_peers(50)),
             False,
         )
-
-        logger.info(peers)
 
         for peer in peers:
             if (peer["ip"] == self.server.external_ip and 

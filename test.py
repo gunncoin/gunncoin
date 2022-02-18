@@ -34,13 +34,17 @@ bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 transaction = create_transaction(alice_private, alices_public, bobs_public, 10)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 20)
 
+logger.info(transaction)
+
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
+
+logger.info(tx_message)
 
 async def test():
     reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
     await P2PProtocol.send_message(writer, tx_message)
     await asyncio.sleep(2)
     await P2PProtocol.send_message(writer, tx_message2)
-    
+
 asyncio.run(test())

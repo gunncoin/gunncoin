@@ -16,9 +16,11 @@ class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.pending_transactions = []
-        self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        self.target = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
-    def make_genesis_block(self):
+        self.create_genesis_block()
+
+    def create_genesis_block(self):
         # Create the genesis block
         logger.info("Creating genesis block")
         self.chain.append(self.make_new_block())
@@ -27,7 +29,7 @@ class Blockchain(object):
         block = self.create_block(
             height=len(self.chain),
             transactions=self.pending_transactions,
-            previous_hash=self.last_block["hash"],
+            previous_hash=self.last_block["hash"] if self.last_block else None,
             nonce=format(random.getrandbits(64), "x"),
             target=self.target,
             timestamp=int(time()),
@@ -53,10 +55,11 @@ class Blockchain(object):
         return block
 
     @staticmethod
-    def verify_block_hash(block):
+    def verify_block_hash(block: dict):
         block_hash = block["hash"]
-        block.pop("hash")
-        return block_hash == Blockchain.hash(block)
+        data = block.copy()
+        data.pop("hash")
+        return block_hash == Blockchain.hash(data)
 
     @staticmethod
     def hash(block):
