@@ -40,7 +40,6 @@ class P2PProtocol:
         if not handler:
             raise P2PError("Missing handler for message")
 
-        logger.info("Now we send the message")
         await handler(message, writer)
 
     async def handle_ping(self, message, writer):
@@ -62,7 +61,6 @@ class P2PProtocol:
             self.server.external_ip, self.server.external_port, peer_address_list
         )
         await self.send_message(writer, peers_message)
-        logger.info("we sent the message back bro")
 
         # Let's send them blocks if they have less than us
         if block_height < self.blockchain.last_block["height"]:
@@ -90,13 +88,16 @@ class P2PProtocol:
                 self.blockchain.pending_transactions.append(tx)
 
                 for peer in self.connection_pool.get_alive_peers(20):
-                    logger.info("sending a transaction to " + str(peer[0]))
                     await self.send_message(
                         peer[1],
                         create_transaction_message(
                             self.server.external_ip, self.server.external_port, tx
                         ),
                     )
+                    logger.info(peer[0])
+                    logger.info("sent the transaction " + str( create_transaction_message(
+                            self.server.external_ip, self.server.external_port, tx
+                        )))
         else:
             logger.warning("Received invalid transaction")
 
@@ -112,6 +113,8 @@ class P2PProtocol:
 
         # Give the block to the blockain to append if valid
         self.blockchain.add_block(block)
+
+        logger.info("added a new block?" + str(self.blockchain.chain))
 
         # Transmit the block to our peers
         for peer in self.connection_pool.get_alive_peers(20):
@@ -142,12 +145,14 @@ class P2PProtocol:
         logger.info(peers)
 
         for peer in peers:
+            if (peer["ip"] == self.server.external_ip and 
+                peer["port"] == self.server.external_port):
+                continue
             # Create a connection and add them to our connection pool if successful
             reader, writer = await asyncio.open_connection(peer["ip"], peer["port"])
 
             # We're only interested in the "writer"
             self.connection_pool.add_peer(writer)
-            logger.info("add it")
 
             # Send the peer a PING message
             await self.send_message(writer, ping_message)

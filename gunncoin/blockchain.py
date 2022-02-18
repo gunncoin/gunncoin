@@ -18,15 +18,16 @@ class Blockchain(object):
         self.pending_transactions = []
         self.target = "00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
+    def make_genesis_block(self):
         # Create the genesis block
         logger.info("Creating genesis block")
-        self.chain.append(self.make_random_block())
+        self.chain.append(self.make_new_block())
 
-    def make_random_block(self):
+    def make_new_block(self):
         block = self.create_block(
             height=len(self.chain),
             transactions=self.pending_transactions,
-            previous_hash=self.last_block["hash"] if self.last_block else None,
+            previous_hash=self.last_block["hash"],
             nonce=format(random.getrandbits(64), "x"),
             target=self.target,
             timestamp=int(time()),
@@ -115,11 +116,10 @@ class Blockchain(object):
                 return self.chain[index:]
 
     async def mine_new_block(self):
-        logger.info("called")
         self.recalculate_target(self.last_block["height"] + 1)
 
         while True:
-            new_block = self.make_random_block()
+            new_block = self.make_new_block()
             if self.valid_block(new_block):
                 break
 

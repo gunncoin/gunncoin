@@ -22,7 +22,7 @@ class Server:
 
         if not (blockchain and connection_pool and p2p_protocol):
             logger.error(
-                "'blockchain', 'connection_pool', and 'gossip_protocol' must all be instantiated"
+                "'blockchain', 'connection_pool', and 'p2p_protocol' must all be instantiated"
             )
             raise Exception("Could not start")
 
@@ -61,9 +61,9 @@ class Server:
                     break
 
 
-            except (asyncio.exceptions.IncompleteReadError, ConnectionError):
+            except (asyncio.exceptions.IncompleteReadError, ConnectionError) as e:
                 # An error happened, break out of the wait loop
-                logger.error("Something bad happened")
+                logger.error(e)
                 break
 
         # The connection has closed. Let's clean up...
@@ -86,9 +86,10 @@ class Server:
             # manually listen for connections
             logger.info("manually listening for incoming messages")
             await self.handle_connection(reader, writer)
-        except (asyncio.exceptions.IncompleteReadError, ConnectionError):
+        except (asyncio.exceptions.IncompleteReadError, ConnectionError) as e:
                 # An error happened, break out of the wait loop
                 logger.error("Failed to connect to the network")
+                logger.error(e)
 
     async def listen(self, hostname="0.0.0.0", port=8888):
         server = await asyncio.start_server(self.handle_connection, hostname, port)
@@ -104,11 +105,10 @@ class Server:
 
     async def start_mining(self, public_key: str):
         count = 0
-        alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
         while True:
             try:
                 # reward ourselves for when we solve the block
-                reward_transaction = block_reward_transaction(alices_public)
+                reward_transaction = block_reward_transaction(public_key)
                 self.blockchain.pending_transactions.append(reward_transaction)
                 await self.blockchain.mine_new_block()
 
