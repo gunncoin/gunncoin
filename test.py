@@ -42,7 +42,7 @@ tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 logger.info(tx_message)
 
 async def test():
-    reader, writer = await asyncio.open_connection('127.0.0.1', 8888)
+    reader, writer = await asyncio.open_connection('127.0.0.1', 4866)
     await P2PProtocol.send_message(writer, tx_message)
     await asyncio.sleep(2)
     await P2PProtocol.send_message(writer, tx_message2)

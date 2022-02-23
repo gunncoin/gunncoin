@@ -39,15 +39,6 @@ class PingMessage(Schema):
         data["name"] = "ping"
         return data
 
-class BalanceMessage(Schema):
-    payload = fields.Nested(Balance)
-
-    @post_load
-    def add_name(self, data, **kwargs):
-        data["name"] = "balance"
-        return data
-
-
 class MessageDisambiguation(OneOfSchema):
     type_field = "name"
     type_schemas = {
@@ -120,18 +111,5 @@ def create_transaction_message(external_ip, external_port, tx):
                 "name": "transaction",
                 "payload": tx,
             },
-        }
-    )
-
-def create_balance_message(external_ip, external_port, public_address):
-    return BaseSchema().dumps(
-        {
-            "meta": meta(external_ip, external_port),
-            "message": {
-                "name": "balance",
-                "payload": {
-                    "public_address": public_address
-                }
-            }
         }
     )

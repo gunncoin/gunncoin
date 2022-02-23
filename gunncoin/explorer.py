@@ -22,8 +22,20 @@ class Explorer:
     def recalculate(self):
       for block in self.blockchain.chain[self.last_block:]:
         for transaction in block["transactions"]:
-          self.database[transaction["receiver"]] += transaction["amount"]
-          self.database[transaction["sender"]] -= transaction["amount"]
+          receiver = transaction["receiver"]
+          sender = transaction["sender"]
+          amount = transaction["amount"]
+
+          logger.info(amount)
+
+          if not receiver in self.database:
+            self.database[receiver] = 0
+
+          if not sender in self.database:
+            self.database[sender] = 0
+
+          self.database[receiver] += amount
+          self.database[sender] -= amount
 
       self.last_block = self.blockchain.last_block["height"]
 

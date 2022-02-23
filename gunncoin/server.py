@@ -40,9 +40,6 @@ class Server:
                 data = await reader.readuntil(b"\n")  # <3>
                 decoded_data = data.decode("utf8").strip()  # <4>
 
-                logger.info("Elmo got mail!")
-                logger.info(decoded_data)
-
                 try:
                     message = BaseSchema().loads(decoded_data)  # <5>
                 except MarshmallowError:
@@ -78,8 +75,8 @@ class Server:
             logger.info("TODO: Check hard coded nodes (discovery protocol), checking my local pc 10.0.0.130 for now")
             
             # Open a connection with a known node on the network
-            #reader, writer = await asyncio.open_connection("10.0.0.130", 8888)
-            reader, writer = await asyncio.open_connection(node, 8888)
+            #reader, writer = await asyncio.open_connection("10.0.0.130", 4866)
+            reader, writer = await asyncio.open_connection(node, 4866)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
