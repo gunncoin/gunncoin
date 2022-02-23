@@ -7,9 +7,9 @@ from gunncoin.server import Server
 
 blockchain = Blockchain()
 connection_pool = ConnectionPool()
-explorer = Explorer()
+explorer = Explorer(blockchain)
 
-server = Server(blockchain, connection_pool, explorer)
+server = Server(blockchain, connection_pool)
 
 """
 A node is trusted and is used to handle http request for the app.

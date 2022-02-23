@@ -5,6 +5,7 @@ import math
 import random
 from hashlib import sha256
 from time import time
+from gunncoin.types import BlockType, TransactionType
 from gunncoin.transactions import block_reward_transaction, create_transaction, validate_transaction
 
 import structlog
@@ -14,8 +15,8 @@ logger = structlog.getLogger("blockchain")
 
 class Blockchain(object):
     def __init__(self):
-        self.chain = []
-        self.pending_transactions = []
+        self.chain: list[BlockType] = []
+        self.pending_transactions: list[TransactionType] = []
         self.target = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
         self.create_genesis_block()
@@ -34,7 +35,7 @@ class Blockchain(object):
         )
         self.chain.append(genesis_block)
 
-    def make_new_block(self, mined_by):
+    def make_new_block(self, mined_by) -> BlockType:
         block = self.create_block(
             mined_by=mined_by,
             height=len(self.chain),
@@ -50,8 +51,8 @@ class Blockchain(object):
     @staticmethod
     def create_block(
         mined_by, height, transactions, previous_hash, nonce, target, timestamp=None
-    ):
-        block = {
+    ) -> BlockType:
+        block: BlockType = {
             "height": height,
             "transactions": transactions,
             "previous_hash": previous_hash,
@@ -65,24 +66,24 @@ class Blockchain(object):
         return block
 
     @staticmethod
-    def verify_block_hash(block):
+    def verify_block_hash(block: BlockType):
         block_hash = block["hash"]
         data = block.copy()
         data.pop("hash")
         return block_hash == Blockchain.hash(data)
 
     @staticmethod
-    def hash(block):
+    def hash(block: BlockType) -> str:
         # We ensure the dictionary is sorted or we'll have inconsistent hashes
         block_string = json.dumps(block, sort_keys=True).encode()
         return sha256(block_string).hexdigest()
 
     @property
-    def last_block(self):
+    def last_block(self) -> BlockType:
         # Returns the last block in the chain (if there are blocks)
         return self.chain[-1] if self.chain else None
 
-    def has_block(self, block):
+    def has_block(self, block: BlockType) -> bool:
         # Does this block exist on our blockchain?
         
         # If the block is newer than what we have, then no
@@ -92,21 +93,21 @@ class Blockchain(object):
         # TODO: Check for conflicts, and figure out a concensus
         return self.chain[block["height"]]["hash"] == block["hash"]
 
-    def valid_block(self, block):
+    def valid_block(self, block: BlockType):
         # Check if a block's hash is less than the target...
         return block["hash"] < self.target
 
-    def add_block(self, block):
+    def add_block(self, block: BlockType):
         # TODO: Add proper validation logic here!
         self.chain.append(block)
 
-    def add_transaction(self, transaction):
+    def add_transaction(self, transaction: TransactionType):
         if(validate_transaction(transaction)):
             self.pending_transactions.append(transaction)
         else:
             logger.error("Invalid transaction: " + json.dumps(transaction))
 
-    def remove_transaction(self, transaction):
+    def remove_transaction(self, transaction: TransactionType):
         for t in self.pending_transactions:
             if t["signature"] == transaction["signature"]:
                 self.pending_transactions.remove(t)
@@ -139,7 +140,7 @@ class Blockchain(object):
 
         return self.target
 
-    async def get_blocks_after_timestamp(self, timestamp):
+    async def get_blocks_after_timestamp(self, timestamp) -> list[BlockType]:
         for index, block in enumerate(self.chain):
             if timestamp < block["timestamp"]:
                 return self.chain[index:]

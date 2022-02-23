@@ -11,7 +11,7 @@ connection_pool = ConnectionPool()  # <2>
 import structlog
 logger = structlog.getLogger()
 
-server = Server(blockchain, connection_pool, None)
+server = Server(blockchain, connection_pool)
 
 async def main():
     if len(sys.argv) <= 1 or not sys.argv[1].isdigit():

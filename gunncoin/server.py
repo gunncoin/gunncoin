@@ -16,11 +16,10 @@ logger = structlog.getLogger()  # <7>
 
 
 class Server:
-    def __init__(self, blockchain: Blockchain, connection_pool: ConnectionPool, explorer: Explorer):
+    def __init__(self, blockchain: Blockchain, connection_pool: ConnectionPool):
         self.blockchain = blockchain  # <1>
         self.connection_pool = connection_pool
         self.p2p_protocol = P2PProtocol(self)
-        self.explorer = explorer
         self.external_ip = "127.0.0.1"
         self.external_port = None
 
