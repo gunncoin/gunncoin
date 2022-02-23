@@ -3,6 +3,7 @@ from asyncio import StreamReader, StreamWriter
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
 from gunncoin.peers import P2PProtocol
+from gunncoin.explorer import Explorer
 from gunncoin.transactions import block_reward_transaction
 
 import structlog
@@ -15,10 +16,11 @@ logger = structlog.getLogger()  # <7>
 
 
 class Server:
-    def __init__(self, blockchain: Blockchain, connection_pool: ConnectionPool):
+    def __init__(self, blockchain: Blockchain, connection_pool: ConnectionPool, explorer: Explorer):
         self.blockchain = blockchain  # <1>
         self.connection_pool = connection_pool
         self.p2p_protocol = P2PProtocol(self)
+        self.explorer = explorer
         self.external_ip = "127.0.0.1"
         self.external_port = None
 
@@ -33,7 +35,6 @@ class Server:
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
         logger.info("got a new connection")
-        logger.info(self.connection_pool.get_alive_peers(10))
         while True:
             try:
                 # Wait forever on new data to arrive
@@ -73,13 +74,13 @@ class Server:
         await writer.wait_closed()
         self.connection_pool.remove_peer(writer)  # <7>
 
-    async def connect_to_network(self):
+    async def connect_to_network(self, node):
         try:
             logger.info("TODO: Check hard coded nodes (discovery protocol), checking my local pc 10.0.0.130 for now")
             
             # Open a connection with a known node on the network
             #reader, writer = await asyncio.open_connection("10.0.0.130", 8888)
-            reader, writer = await asyncio.open_connection("127.0.0.1", 8887)
+            reader, writer = await asyncio.open_connection(node, 8888)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
@@ -105,18 +106,16 @@ class Server:
         async with server:
             await server.serve_forever()
 
-    async def start_mining(self, public_key: str):
-        count = 0
-
+    async def start_mining(self, public_address: str):
         await asyncio.sleep(5)
         logger.info("START MINING")
 
         while True:
             try:
                 # reward ourselves for when we solve the block
-                reward_transaction = block_reward_transaction(public_key)
+                reward_transaction = block_reward_transaction(public_address)
                 self.blockchain.pending_transactions.append(reward_transaction)
-                await self.blockchain.mine_new_block()
+                await self.blockchain.mine_new_block(public_address=public_address)
 
                 block_message = create_block_message(self.external_ip, self.external_port, self.blockchain.chain[-1])
                 for peer in self.connection_pool.get_alive_peers(20):
@@ -125,10 +124,7 @@ class Server:
                         block_message,
                     )
 
-                await asyncio.sleep(0)
-                count += 1
-                if count > 3:
-                    break
+                await asyncio.sleep(5)
             except Exception as e:
                 logger.error(e)
                 break

@@ -13,7 +13,7 @@ class ConnectionPool:
             user.write(f"{message}".encode())
 
     @staticmethod
-    def get_address_string(writer):
+    def get_address_string(writer) -> str:
         ip = writer.address["ip"]
         port = writer.address["port"]
         return f"{ip}:{port}"  # <2>

@@ -23,10 +23,20 @@ class Blockchain(object):
     def create_genesis_block(self):
         # Create the genesis block
         logger.info("Creating genesis block")
-        self.chain.append(self.make_new_block())
+        genesis_block = self.create_block(
+            mined_by="0",
+            height=0,
+            transactions=[],
+            previous_hash=None,
+            nonce="0",
+            target="0",
+            timestamp=0
+        )
+        self.chain.append(genesis_block)
 
-    def make_new_block(self):
+    def make_new_block(self, mined_by):
         block = self.create_block(
+            mined_by=mined_by,
             height=len(self.chain),
             transactions=self.pending_transactions,
             previous_hash=self.last_block["hash"] if self.last_block else None,
@@ -39,7 +49,7 @@ class Blockchain(object):
 
     @staticmethod
     def create_block(
-        height, transactions, previous_hash, nonce, target, timestamp=None,
+        mined_by, height, transactions, previous_hash, nonce, target, timestamp=None
     ):
         block = {
             "height": height,
@@ -55,7 +65,7 @@ class Blockchain(object):
         return block
 
     @staticmethod
-    def verify_block_hash(block: dict):
+    def verify_block_hash(block):
         block_hash = block["hash"]
         data = block.copy()
         data.pop("hash")
@@ -72,6 +82,16 @@ class Blockchain(object):
         # Returns the last block in the chain (if there are blocks)
         return self.chain[-1] if self.chain else None
 
+    def has_block(self, block):
+        # Does this block exist on our blockchain?
+        
+        # If the block is newer than what we have, then no
+        if self.last_block["height"] < block["height"]:
+            return False
+
+        # TODO: Check for conflicts, and figure out a concensus
+        return self.chain[block["height"]]["hash"] == block["hash"]
+
     def valid_block(self, block):
         # Check if a block's hash is less than the target...
         return block["hash"] < self.target
@@ -85,6 +105,12 @@ class Blockchain(object):
             self.pending_transactions.append(transaction)
         else:
             logger.error("Invalid transaction: " + json.dumps(transaction))
+
+    def remove_transaction(self, transaction):
+        for t in self.pending_transactions:
+            if t["signature"] == transaction["signature"]:
+                self.pending_transactions.remove(t)
+                return
 
     def recalculate_target(self, block_index):
         """
@@ -118,11 +144,11 @@ class Blockchain(object):
             if timestamp < block["timestamp"]:
                 return self.chain[index:]
 
-    async def mine_new_block(self):
+    async def mine_new_block(self, public_address: str):
         self.recalculate_target(self.last_block["height"] + 1)
 
         while True:
-            new_block = self.make_new_block()
+            new_block = self.make_new_block(mined_by=public_address)
             if self.valid_block(new_block):
                 break
 

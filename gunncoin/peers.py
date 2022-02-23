@@ -1,6 +1,7 @@
 import asyncio
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
+from gunncoin.explorer import Explorer
 
 import structlog
 
@@ -37,6 +38,7 @@ class P2PProtocol:
             "ping": self.handle_ping,
             "peers": self.handle_peers,
             "transaction": self.handle_transaction,
+            "balance": self.handle_balance
         }
 
         handler = message_handlers.get(message["name"])
@@ -97,9 +99,6 @@ class P2PProtocol:
                             self.server.external_ip, self.server.external_port, tx
                         ),
                     )
-                    logger.info("sent the transaction " + str( create_transaction_message(
-                            self.server.external_ip, self.server.external_port, tx
-                        )))
         else:
             logger.warning("Received invalid transaction")
 
@@ -114,8 +113,16 @@ class P2PProtocol:
             logger.error("Block is invalid")
             return
 
+        if(self.blockchain.has_block(block)):
+            logger.info("Already have this block")
+            return
+
         # Give the block to the blockain to append if valid
         self.blockchain.add_block(block)
+
+        for transaction in block["transactions"]:
+            self.blockchain.remove_transaction(transaction)
+            # TODO: handle transactions in explorer dict
 
         # Transmit the block to our peers
         for peer in self.connection_pool.get_alive_peers(20):
@@ -148,15 +155,28 @@ class P2PProtocol:
             False,
         )
 
+        logger.info(peers)
+
         for peer in peers:
             if (peer["ip"] == self.server.external_ip and 
                 peer["port"] == self.server.external_port):
                 continue
+
             # Create a connection and add them to our connection pool if successful
-            reader, writer = await asyncio.open_connection(peer["ip"], peer["port"])
+            reader, peer_writer = await asyncio.open_connection(peer["ip"], peer["port"])
+
+            peer_address = peer.copy()
+            peer_address.pop("last_seen")
+            peer_writer.address = peer_address
 
             # We're only interested in the "writer"
-            self.connection_pool.add_peer(writer)
+            self.connection_pool.add_peer(peer_writer)
 
             # Send the peer a PING message
-            await self.send_message(writer, ping_message)
+            await self.send_message(peer_writer, ping_message)
+
+    async def handle_balance(self, message, writer):
+        """
+        Executed when we receive a balance request
+        """
+
