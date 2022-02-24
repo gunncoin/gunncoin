@@ -9,8 +9,9 @@ from time import time
 from gunncoin.messages import create_transaction_message
 
 from gunncoin.blockchain import Blockchain
+from gunncoin.peers import P2PProtocol
 from gunncoin.transactions import validate_transaction
-from explorer.explorer_messages import BaseSchema
+from explorer.explorer_messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_response
 
 from marshmallow.exceptions import MarshmallowError
 import structlog
@@ -107,11 +108,23 @@ class Explorer:
         """
         logger.info("Received transaction")
 
-        # Validate the transaction
+        self.recalculate()
+
+        # Extract transaction data
         tx = message["payload"]
         
-        # Send it to our networked server to send to other peers
-        if validate_transaction(tx) is True:
+        # Check for balance
+        if not (tx["sender"] in self.database and self.database[tx["sender"]] > tx["amount"]):
+            logger.warning("Insufficient funds")
+
+            # It did not work for some reason
+            res = create_transaction_response(False)
+            await P2PProtocol.send_message(writer, res)
+
+            return
+
+        # Send it to our networked server to send to other peers if its a valid transaction
+        if validate_transaction(tx):
             for peer in self.server.connection_pool.get_alive_peers(20):
                 await self.send_message(
                     peer[1],
@@ -119,8 +132,16 @@ class Explorer:
                             self.server.external_ip, self.server.external_port, tx
                         ),
                     )
+            
+            # It worked, so we let our dude know
+            message = create_transaction_response(True)
+            await P2PProtocol.send_message(writer, message)
         else:
             logger.warning("Received invalid transaction")
+
+            # It did not work for some reason
+            res = create_transaction_response(False)
+            await P2PProtocol.send_message(writer, res)
 
     async def handle_balance_request(self, message, writer):
         """
@@ -130,8 +151,7 @@ class Explorer:
 
         self.recalculate()
 
+        # Write back balance response
         public_address = message["payload"]["public_address"]
-        logger.info(self.database)
-        logger.info(self.database[public_address])
-
-
+        res = create_balance_response(self.database[public_address] if public_address in self.database else 0)
+        await P2PProtocol.send_message(writer, res)

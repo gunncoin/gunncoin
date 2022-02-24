@@ -1,7 +1,7 @@
 import asyncio
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
-from explorer.explorer import Explorer
+from explorer.explorer_messages import BalanceResponse, create_balance_request
 
 import structlog
 
@@ -12,6 +12,7 @@ from gunncoin.messages import (
     create_ping_message,
 )
 from gunncoin.transactions import validate_transaction
+from trusted_nodes import get_random_explorer_node
 
 logger = structlog.getLogger(__name__)
 
@@ -83,23 +84,45 @@ class P2PProtocol:
         """
         logger.info("Received transaction")
 
-        # Validate the transaction
+        # Extract transaction
         tx = message["payload"]
 
-        if validate_transaction(tx) is True:
-            # Add the tx to our pool, and propagate it to our peers
-            if tx not in self.blockchain.pending_transactions:
-                self.blockchain.pending_transactions.append(tx)
+        # Validate the transaction
+        if validate_transaction(tx) is False:
+            return
+        
+        try:
+            # Check for sufficient funds
+            reader, explorer_writer = await asyncio.open_connection(get_random_explorer_node(), 277)
+            balance_request = create_balance_request(tx["sender"])
+            await P2PProtocol.send_message(explorer_writer, balance_request)
 
-                for peer in self.connection_pool.get_alive_peers(20):
-                    await self.send_message(
-                        peer[1],
-                        create_transaction_message(
-                            self.server.external_ip, self.server.external_port, tx
-                        ),
-                    )
-        else:
-            logger.warning("Received invalid transaction")
+            # Wait forever on new data to arrive
+            data = await reader.readuntil(b"\n")
+            decoded_data = data.decode("utf8").strip()
+
+            balance_response = BalanceResponse().loads(decoded_data)
+            balance = balance_response["balance"]
+            
+            if tx["amount"] > balance:
+                logger.warning("Insufficient funds")
+                return
+
+        except Exception as e:
+            logger.error("Error when checking balance\n" + str(e))
+            return
+
+
+        # Add the tx to our pool, and propagate it to our peers
+        if tx not in self.blockchain.pending_transactions:
+            self.blockchain.pending_transactions.append(tx)     
+            for peer in self.connection_pool.get_alive_peers(20):
+                await self.send_message(
+                    peer[1],
+                    create_transaction_message(
+                        self.server.external_ip, self.server.external_port, tx
+                    ),
+                )
 
     async def handle_block(self, message, writer):
         """

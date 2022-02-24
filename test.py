@@ -33,7 +33,7 @@ bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf
 bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 
 
-transaction = create_transaction(alice_private, alices_public, bobs_public, 10)
+transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
 
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)

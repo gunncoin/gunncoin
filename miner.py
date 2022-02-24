@@ -31,7 +31,7 @@ async def main():
 
     # Start the server
     listen_task = asyncio.create_task(server.listen(hostname="127.0.0.1", port=port))
-    connect_task = asyncio.create_task(server.connect_to_network("127.0.0.1"))
+    connect_task = asyncio.create_task(server.connect_to_network())
     mining_task = asyncio.create_task(server.start_mining(public_address=miner_address))
 
     await listen_task

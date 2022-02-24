@@ -1,9 +1,11 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
+from random import choice
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
 from gunncoin.peers import P2PProtocol
 from gunncoin.transactions import block_reward_transaction
+from trusted_nodes import get_random_explorer_node
 
 import structlog
 from marshmallow.exceptions import MarshmallowError
@@ -58,7 +60,6 @@ class Server:
                 if writer.is_closing():
                     break
 
-
             except (asyncio.exceptions.IncompleteReadError, ConnectionError) as e:
                 # An error happened, break out of the wait loop
                 logger.error(e)
@@ -69,13 +70,14 @@ class Server:
         await writer.wait_closed()
         self.connection_pool.remove_peer(writer)  # <7>
 
-    async def connect_to_network(self, node):
+    async def connect_to_network(self):
         try:
             logger.info("TODO: Check hard coded nodes (discovery protocol), checking my local pc 10.0.0.130 for now")
             
             # Open a connection with a known node on the network
             #reader, writer = await asyncio.open_connection("10.0.0.130", 4866)
-            reader, writer = await asyncio.open_connection(node, 4866)
+
+            reader, writer = await asyncio.open_connection(get_random_explorer_node(), 4866)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)

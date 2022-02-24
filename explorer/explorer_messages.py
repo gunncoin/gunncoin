@@ -3,6 +3,7 @@ from marshmallow_oneofschema import OneOfSchema
 
 from explorer.explorer_schema import Transaction, Balance
 
+
 class BalanceMessage(Schema):
   payload = fields.Nested(Balance)
 
@@ -33,16 +34,6 @@ class MessageDisambiguation(OneOfSchema):
 class BaseSchema(Schema):
     message = fields.Nested(MessageDisambiguation)
 
-def create_transaction_request(tx):
-    return BaseSchema().dumps(
-        {
-            "message": {
-                "name": "transaction",
-                "payload": tx,
-            },
-        }
-    )
-
 def create_balance_request(public_address):
   return BaseSchema().dumps(
     {
@@ -54,3 +45,25 @@ def create_balance_request(public_address):
       }
     }
   )
+
+def create_transaction_request(tx):
+    return BaseSchema().dumps(
+        {
+            "message": {
+                "name": "transaction",
+                "payload": tx,
+            },
+        }
+    )
+
+class BalanceResponse(Schema):
+    balance = fields.Int()
+
+class TransactionResponse(Schema):
+    successful: fields.Bool()
+
+def create_balance_response(balance: int):
+    return BalanceResponse().dumps({ "balance": balance })
+
+def create_transaction_response(successful: bool):
+    return TransactionResponse().dumps({ "successful": successful })
