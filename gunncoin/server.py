@@ -3,7 +3,6 @@ from asyncio import StreamReader, StreamWriter
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
 from gunncoin.peers import P2PProtocol
-from gunncoin.explorer import Explorer
 from gunncoin.transactions import block_reward_transaction
 
 import structlog

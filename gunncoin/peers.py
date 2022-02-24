@@ -1,7 +1,7 @@
 import asyncio
 from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
-from gunncoin.explorer import Explorer
+from explorer.explorer import Explorer
 
 import structlog
 
@@ -38,7 +38,6 @@ class P2PProtocol:
             "ping": self.handle_ping,
             "peers": self.handle_peers,
             "transaction": self.handle_transaction,
-            "balance": self.handle_balance
         }
 
         handler = message_handlers.get(message["name"])
@@ -106,7 +105,7 @@ class P2PProtocol:
         """
         Executed when we receive a block that was broadcast by a peer
         """
-        logger.info("Received new block")
+        logger.info(f"Received new block")
 
         block = message["payload"]
         if(not Blockchain.verify_block_hash(block)):
@@ -174,9 +173,3 @@ class P2PProtocol:
 
             # Send the peer a PING message
             await self.send_message(peer_writer, ping_message)
-
-    async def handle_balance(self, message, writer):
-        """
-        Executed when we receive a balance request
-        """
-
