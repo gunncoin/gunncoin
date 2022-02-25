@@ -5,11 +5,18 @@ from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
 from gunncoin.server import Server
 
-blockchain = Blockchain()  # <1>
-connection_pool = ConnectionPool()  # <2>
-
 import structlog
 logger = structlog.getLogger()
+
+"""
+We setup the networking in 3 possible ways:
+- Check for UPNP: if it works, port forward the right port and we're good
+- Tell the user to manually configure port forwarding on firewall
+- TODO: Try nat punchthrough. This is hard?
+"""
+
+blockchain = Blockchain()  # <1>
+connection_pool = ConnectionPool()  # <2>
 
 server = Server(blockchain, connection_pool)
 
