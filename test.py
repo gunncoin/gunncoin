@@ -9,7 +9,7 @@ from gunncoin.transactions import create_transaction
 from nacl.signing import SigningKey
 import nacl
 import structlog
-from trusted_nodes import trusted_nodes
+from trusted_nodes import TrustedNodes
 
 logger = structlog.getLogger()
 
@@ -41,11 +41,11 @@ tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
 #req = create_transaction_request(transaction)
-req = create_balance_request("81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c")
+req = create_balance_request("034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684")
 
 async def test():
 
-    reader, writer = await asyncio.open_connection(trusted_nodes[0], 277)
+    reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 277)
     await P2PProtocol.send_message(writer, req)
     data = await reader.readuntil(b"\n")  # <3>
     decoded_data = data.decode("utf8").strip()  # <4>

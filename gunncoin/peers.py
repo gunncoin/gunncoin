@@ -141,6 +141,7 @@ class P2PProtocol:
 
         # Give the block to the blockain to append if valid
         self.blockchain.add_block(block)
+        logger.info(f"Added block {block['height']}")
 
         for transaction in block["transactions"]:
             self.blockchain.remove_transaction(transaction)
