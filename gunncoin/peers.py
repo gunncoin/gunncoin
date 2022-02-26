@@ -51,6 +51,7 @@ class P2PProtocol:
         """
         Executed when we receive a `ping` message
         """
+        logger.info("Handle ping message")
 
         block_height = message["payload"]["block_height"]
 
@@ -67,6 +68,8 @@ class P2PProtocol:
         )
         await self.send_message(writer, peers_message)
 
+        logger.info("Sent peers")
+
         # Let's send them blocks if they have less than us
         if block_height < self.blockchain.last_block["height"]:
             # Send them each block in succession, from their height
@@ -77,6 +80,8 @@ class P2PProtocol:
                         self.server.external_ip, self.server.external_port, block
                     ),
                 )
+
+        logger.info("Sent blocks")
 
     async def handle_transaction(self, message, writer):
         """
