@@ -12,7 +12,7 @@ from gunncoin.messages import (
     create_ping_message,
 )
 from gunncoin.transactions import validate_transaction
-from trusted_nodes import get_random_explorer_node
+from trusted_nodes import TrustedNodes
 
 logger = structlog.getLogger(__name__)
 
@@ -93,7 +93,7 @@ class P2PProtocol:
         
         try:
             # Check for sufficient funds
-            reader, explorer_writer = await asyncio.open_connection(get_random_explorer_node(), 277)
+            reader, explorer_writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 277)
             balance_request = create_balance_request(tx["sender"])
             await P2PProtocol.send_message(explorer_writer, balance_request)
 

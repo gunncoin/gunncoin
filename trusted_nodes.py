@@ -10,8 +10,8 @@ Note: This has to be hard coded in order to first connect to the network
 """
 
 from random import choice
-
-trusted_nodes = ["127.0.0.1"]
-
-def get_random_explorer_node():
-    choice(trusted_nodes)
+class TrustedNodes:
+    @staticmethod
+    def get_random_node():
+        trusted_nodes = ["45.33.51.145"]
+        return choice(trusted_nodes)

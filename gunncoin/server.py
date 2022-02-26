@@ -5,7 +5,7 @@ from gunncoin.blockchain import Blockchain
 from gunncoin.connections import ConnectionPool
 from gunncoin.peers import P2PProtocol
 from gunncoin.transactions import block_reward_transaction
-from trusted_nodes import get_random_explorer_node
+from trusted_nodes import TrustedNodes
 
 import structlog
 from marshmallow.exceptions import MarshmallowError
@@ -77,7 +77,8 @@ class Server:
             # Open a connection with a known node on the network
             #reader, writer = await asyncio.open_connection("10.0.0.130", 4866)
 
-            reader, writer = await asyncio.open_connection(get_random_explorer_node(), 4866)
+            logger.info(TrustedNodes.get_random_node())
+            reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 4866)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
@@ -96,9 +97,10 @@ class Server:
         logger.info(f"Server listening on {hostname}:{port}")
 
         self.external_port = port
-        #await self.get_external_ip()
-        logger.warning("using local ip")
-        self.external_ip = "127.0.0.1"
+        await self.get_external_ip()
+        logger.info(f"Listening on {self.external_ip}:{self.external_port}")
+        #logger.warning("using local ip")
+        #self.external_ip = "127.0.0.1"
 
         async with server:
             await server.serve_forever()
