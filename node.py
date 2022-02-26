@@ -25,17 +25,12 @@ We send a transaction request from a phone to here, which will then check for su
 The message will assume that balance is correct, as signiture cannot be forged and node already verified (node is trusted)
 """
 
-nodes = ["127.0.0.1", "other ip"] # hard coded list of all nodes
-
 async def main():
     # Start the server
-    server_task = asyncio.create_task(server.listen(port=4866))
-    #connect_task = asyncio.create_task(server.connect_to_network(nodes[1]))
+    await server.setup()
     explorer_task = asyncio.create_task(explorer.listen())
 
-    await server_task
     await explorer_task
-    #await connect_task
 
 
 asyncio.run(main())

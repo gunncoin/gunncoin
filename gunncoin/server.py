@@ -22,7 +22,7 @@ class Server:
         self.connection_pool = connection_pool
         self.p2p_protocol = P2PProtocol(self)
         self.external_ip = "127.0.0.1"
-        self.external_port = None
+        self.external_port = 4866
 
         if not (blockchain and connection_pool):
             logger.error(
@@ -72,38 +72,35 @@ class Server:
 
     async def connect_to_network(self):
         try:
-            logger.info("TODO: Check hard coded nodes (discovery protocol), checking my local pc 10.0.0.130 for now")
-            
             # Open a connection with a known node on the network
-            #reader, writer = await asyncio.open_connection("10.0.0.130", 4866)
+            trusted_node = TrustedNodes.get_random_node()
+            logger.info(f"Discovery Protocol: {trusted_node}")
 
-            logger.info(TrustedNodes.get_random_node())
-            reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 4866)
+            reader, writer = await asyncio.open_connection(trusted_node, 4866)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
             await P2PProtocol.send_message(writer, ping_message)
 
             # manually listen for connections
-            logger.info("manually listening for incoming messages")
             await self.handle_connection(reader, writer)
         except (asyncio.exceptions.IncompleteReadError, ConnectionError) as e:
                 # An error happened, break out of the wait loop
                 logger.error("Failed to connect to the network")
                 logger.error(e)
 
-    async def listen(self, hostname="0.0.0.0", port=8888):
-        server = await asyncio.start_server(self.handle_connection, hostname, port)
-        logger.info(f"Server listening on {hostname}:{port}")
-
-        self.external_port = port
-        await self.get_external_ip()
-        logger.info(f"Listening on {self.external_ip}:{self.external_port}")
-        #logger.warning("using local ip")
-        #self.external_ip = "127.0.0.1"
+    async def listen(self, hostname="0.0.0.0"):
+        server = await asyncio.start_server(self.handle_connection, hostname, self.external_port)
+        logger.info(f"Server listening on port {self.external_port}")
 
         async with server:
             await server.serve_forever()
+
+    async def setup(self):
+        await self.get_external_ip()
+
+        asyncio.create_task(self.listen())
+        asyncio.create_task(self.connect_to_network())
 
     async def start_mining(self, public_address: str):
         await asyncio.sleep(5)
