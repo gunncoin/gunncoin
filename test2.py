@@ -91,11 +91,8 @@ bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf
 bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 
 
-transaction = create_transaction(alice_private, alices_public, bobs_public, 300)
+transaction = create_transaction(alice_private, alices_public, bobs_public, 2)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
-
-tx_message = create_transaction_message("127.0.0.1", 88, transaction)
-tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
 req = create_transaction_request(transaction)
 #req = create_balance_request("034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684")
