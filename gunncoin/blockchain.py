@@ -87,7 +87,7 @@ class Blockchain(object):
         # Does this block exist on our blockchain?
         
         # If the block is newer than what we have, then no
-        if self.last_block["height"] < block["height"]:
+        if self.last_block["height"] < block["height"] or block["height"] >= len(self.chain):
             return False
 
         # TODO: Check for conflicts, and figure out a concensus
@@ -96,6 +96,19 @@ class Blockchain(object):
     def valid_block(self, block: BlockType):
         # Check if a block's hash is less than the target...
         return block["hash"] < self.target
+
+    def check_balance(self, public_address):
+        # Check balance of an address, useful for verifying transactions
+        balance = 0
+        
+        for block in self.chain:
+            for tx in block["transactions"]:
+                if tx["receiver"] == public_address:
+                    balance += tx["amount"]
+                if tx["sender"] == public_address:
+                    balance -= tx["amount"]
+
+        return balance
 
     def add_block(self, block: BlockType):
         # TODO: Add proper validation logic here!

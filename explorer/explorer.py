@@ -51,11 +51,11 @@ class Explorer:
         while True:
             try:
                 # Wait forever on new data to arrive
-                data = await reader.readuntil(b"\n")  # <3>
-                decoded_data = data.decode("utf8").strip()  # <4>
+                data = await reader.readuntil(b"\n")
+                decoded_data = data.decode("utf8").strip()
 
                 try:
-                    message = BaseSchema().loads(decoded_data)  # <5>
+                    message = BaseSchema().loads(decoded_data)
                 except MarshmallowError:
                     logger.info("Received unreadable message", peer=writer)
                     break
@@ -77,8 +77,8 @@ class Explorer:
         await writer.wait_closed()
 
     async def listen(self):
-        server = await asyncio.start_server(self.handle_connection, "0.0.0.0", 277)
-        logger.info(f"Explorer listening on port 277")
+        server = await asyncio.start_server(self.handle_connection, "0.0.0.0", 48660)
+        logger.info(f"Explorer listening on port 48660")
 
         async with server:
           await server.serve_forever()

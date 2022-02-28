@@ -1,114 +1,116 @@
-import upnpy
+import asyncio
+import requests
+from explorer.explorer_messages import create_balance_request, create_transaction_request
+from gunncoin.blockchain import Blockchain
+from gunncoin.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
+from gunncoin.peers import P2PProtocol
+from gunncoin.schema import Block, Peer, Transaction
+from gunncoin.transactions import create_transaction
+from nacl.signing import SigningKey
+import nacl
 import structlog
+from trusted_nodes import TrustedNodes
 
 logger = structlog.getLogger()
 
-upnp = upnpy.UPnP()
+"""
+# Generate secret keys for Alice and Bob
+alices_private_key = SigningKey.generate()
+bobs_private_key = SigningKey.generate()
+# Public keys are generated from the private keys
+alices_public_key = alices_private_key.verify_key
+bobs_public_key = bobs_private_key.verify_key
 
-logger.info(upnp.discover())
-# Discover UPnP devices on the network
-# Returns a list of devices e.g.: [Device <Broadcom ADSL Router>]
-devices = upnp.discover()
+alice_private = bytes(alices_private_key).hex()
+alices_public = bytes(alices_public_key).hex()
+
+bobs_private = bytes(bobs_private_key).hex()
+bobs_public = bytes(bobs_public_key).hex()
+"""
+
+alice_private = "bf3f1a7e8911dc9fd0b50e829bb03a301775d0bee630865ad401791e77d21ddc"
+alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
+bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf"
+bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 
 
-# Select the IGD
-# alternatively you can select the device directly from the list
-# device = devices[0]
-device = upnp.get_igd()
+transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
+transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
 
-# Get the services available for this device
-# Returns a list of services available for the device
-# e.g.: [<Service (WANPPPConnection) id="WANPPPConnection.1">, ...]
-device.get_services()
+tx_message = create_transaction_message("127.0.0.1", 88, transaction)
+tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
-# We can now access a specific service on the device by its ID
-# The IDs for the services in this case contain illegal values so we can't access it by an attribute
-# If the service ID didn't contain illegal values we could access it via an attribute like this:
-# service = device.WANPPPConnection
+#req = create_transaction_request(transaction)
+req = create_balance_request("034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684")
 
-# We will access it like a dictionary instead:
-service = device['WANPPPConnection.1']
+async def test():
 
-# Get the actions available for the service
-# Returns a list of actions for the service:
-#   [<Action name="SetConnectionType">,
-#   <Action name="GetConnectionTypeInfo">,
-#   <Action name="RequestConnection">,
-#   <Action name="ForceTermination">,
-#   <Action name="GetStatusInfo">,
-#   <Action name="GetNATRSIPStatus">,
-#   <Action name="GetGenericPortMappingEntry">,
-#   <Action name="GetSpecificPortMappingEntry">,
-#   <Action name="AddPortMapping">,
-#   <Action name="DeletePortMapping">,
-#   <Action name="GetExternalIPAddress">]
-service.get_actions()
+    reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
+    await P2PProtocol.send_message(writer, req)
+    data = await reader.readuntil(b"\n")  # <3>
+    decoded_data = data.decode("utf8").strip()  # <4>
 
-# The action we are looking for is the "AddPortMapping" action
-# Lets see what arguments the action accepts
-# Use the get_input_arguments() or get_output_arguments() method of the action
-# for a list of input / output arguments.
-# Example output of the get_input_arguments method for the "AddPortMapping" action
-# Returns a dictionary:
-# [
-#     {
-#         "name": "NewRemoteHost",
-#         "data_type": "string",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewExternalPort",
-#         "data_type": "ui2",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewProtocol",
-#         "data_type": "string",
-#         "allowed_value_list": [
-#             "TCP",
-#             "UDP"
-#         ]
-#     },
-#     {
-#         "name": "NewInternalPort",
-#         "data_type": "ui2",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewInternalClient",
-#         "data_type": "string",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewEnabled",
-#         "data_type": "boolean",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewPortMappingDescription",
-#         "data_type": "string",
-#         "allowed_value_list": []
-#     },
-#     {
-#         "name": "NewLeaseDuration",
-#         "data_type": "ui4",
-#         "allowed_value_list": []
-#     }
-# ]
-service.AddPortMapping.get_input_arguments()
+    logger.info(decoded_data)
 
-# Finally, add the new port mapping to the IGD
-# This specific action returns an empty dict: {}
+    #await P2PProtocol.send_message(writer, tx_message2)
+
+asyncio.run(test())
+import asyncio
+import requests
+from explorer.explorer_messages import create_balance_request, create_transaction_request
+from gunncoin.blockchain import Blockchain
+from gunncoin.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
+from gunncoin.peers import P2PProtocol
+from gunncoin.schema import Block, Peer, Transaction
+from gunncoin.transactions import create_transaction
+from nacl.signing import SigningKey
+import nacl
+import structlog
+from trusted_nodes import TrustedNodes
+
+logger = structlog.getLogger()
 
 """
-service.AddPortMapping(
-    NewRemoteHost='',
-    NewExternalPort=80,
-    NewProtocol='TCP',
-    NewInternalPort=8888,
-    NewInternalClient='10.0.0.144',
-    NewEnabled=1,
-    NewPortMappingDescription='Test port mapping entry from UPnPy.',
-    NewLeaseDuration=0
-)
+# Generate secret keys for Alice and Bob
+alices_private_key = SigningKey.generate()
+bobs_private_key = SigningKey.generate()
+# Public keys are generated from the private keys
+alices_public_key = alices_private_key.verify_key
+bobs_public_key = bobs_private_key.verify_key
+
+alice_private = bytes(alices_private_key).hex()
+alices_public = bytes(alices_public_key).hex()
+
+bobs_private = bytes(bobs_private_key).hex()
+bobs_public = bytes(bobs_public_key).hex()
 """
+
+alice_private = "bf3f1a7e8911dc9fd0b50e829bb03a301775d0bee630865ad401791e77d21ddc"
+alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
+bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf"
+bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
+
+
+transaction = create_transaction(alice_private, alices_public, bobs_public, 300)
+transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
+
+tx_message = create_transaction_message("127.0.0.1", 88, transaction)
+tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
+
+req = create_transaction_request(transaction)
+#req = create_balance_request("034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684")
+
+async def test():
+
+    reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
+    await P2PProtocol.send_message(writer, req)
+    data = await reader.readuntil(b"\n")  # <3>
+    decoded_data = data.decode("utf8").strip()  # <4>
+
+    logger.info(decoded_data)
+
+    writer.close()
+
+    #await P2PProtocol.send_message(writer, tx_message2)
+
+asyncio.run(test())

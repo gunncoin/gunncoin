@@ -95,26 +95,9 @@ class P2PProtocol:
         # Validate the transaction
         if validate_transaction(tx) is False:
             return
-        
-        try:
-            # Check for sufficient funds
-            reader, explorer_writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 277)
-            balance_request = create_balance_request(tx["sender"])
-            await P2PProtocol.send_message(explorer_writer, balance_request)
 
-            # Wait forever on new data to arrive
-            data = await reader.readuntil(b"\n")
-            decoded_data = data.decode("utf8").strip()
-
-            balance_response = BalanceResponse().loads(decoded_data)
-            balance = balance_response["balance"]
-            
-            if tx["amount"] > balance:
-                logger.warning("Insufficient funds")
-                return
-
-        except Exception as e:
-            logger.error("Error when checking balance\n" + str(e))
+        if tx["amount"] > self.blockchain.check_balance(tx["sender"]):
+            logger.warning("Insufficient funds")
             return
 
 
