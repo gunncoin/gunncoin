@@ -135,8 +135,8 @@ def open_port(
         ("NewInternalClient", internal_client),  # specify IP of internal host
         ("NewEnabled", enabled),  # turn mapping ON
         ("NewPortMappingDescription", description),  # add a description
-        ("NewLeaseDuration", duration),
-    ]  # how long should it be opened?
+        ("NewLeaseDuration", duration), # how long should it be opened?
+    ]  
 
     # NewEnabled should be 1 by default, but better supply it.
     # NewPortMappingDescription Can be anything you want, even an empty string.

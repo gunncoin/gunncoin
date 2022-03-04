@@ -3,9 +3,9 @@ from cmath import exp
 import structlog
 
 from gunncoin.blockchain import Blockchain
-from gunncoin.connections import ConnectionPool
-from explorer.explorer import Explorer
-from gunncoin.server import Server
+from gunncoin.server.connections import ConnectionPool
+from gunncoin.explorer.explorer import Explorer
+from gunncoin.server.server import Server
 
 logger = structlog.getLogger()
 
@@ -27,10 +27,10 @@ The message will assume that balance is correct, as signiture cannot be forged a
 
 async def main():
     # Start the server
-    await server.setup()
-    explorer_task = asyncio.create_task(explorer.listen())
+    server_task = asyncio.create_task(server.setup())
+    explorer_task = asyncio.create_task(explorer.setup())
 
+    await server_task
     await explorer_task
-
 
 asyncio.run(main())

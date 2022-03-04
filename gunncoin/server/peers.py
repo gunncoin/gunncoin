@@ -1,18 +1,18 @@
 import asyncio
 from gunncoin.blockchain import Blockchain
-from gunncoin.connections import ConnectionPool
-from explorer.explorer_messages import BalanceResponse, create_balance_request
+from gunncoin.server.connections import ConnectionPool
+from gunncoin.explorer.messages import BalanceResponse, create_balance_request
 
 import structlog
 
-from gunncoin.messages import (
+from gunncoin.server.messages import (
     create_peers_message,
     create_block_message,
     create_transaction_message,
     create_ping_message,
 )
 from gunncoin.transactions import validate_transaction
-from trusted_nodes import TrustedNodes
+from gunncoin.util.trusted_nodes import TrustedNodes
 
 logger = structlog.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class P2PError(Exception):
 
 class P2PProtocol:
     def __init__(self, server):
-        from gunncoin.server import Server
+        from gunncoin.server.server import Server
 
         self.server: Server = server
         self.blockchain: Blockchain = server.blockchain

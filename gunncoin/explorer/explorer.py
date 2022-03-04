@@ -6,12 +6,13 @@ import math
 import random
 from hashlib import sha256
 from time import time
-from gunncoin.messages import create_transaction_message
+from gunncoin.server.messages import create_transaction_message
 
 from gunncoin.blockchain import Blockchain
-from gunncoin.peers import P2PProtocol
+from gunncoin.server.peers import P2PProtocol
 from gunncoin.transactions import validate_transaction
-from explorer.explorer_messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_response
+from gunncoin.explorer.messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_response
+from gunncoin.util.constants import EXPLORER_PORT
 
 from marshmallow.exceptions import MarshmallowError
 import structlog
@@ -20,7 +21,7 @@ logger = structlog.getLogger("Explorer")
 
 class Explorer:
     def __init__(self, server):
-        from gunncoin.server import Server
+        from gunncoin.server.server import Server
         self.server: Server = server
         self.blockchain = self.server.blockchain
         self.database = {} # {"address": amount}
@@ -76,9 +77,13 @@ class Explorer:
         writer.close()
         await writer.wait_closed()
 
+    async def setup(self):
+        listen_task = asyncio.create_task(self.listen())
+        await listen_task
+
     async def listen(self):
-        server = await asyncio.start_server(self.handle_connection, "0.0.0.0", 48660)
-        logger.info(f"Explorer listening on port 48660")
+        server = await asyncio.start_server(self.handle_connection, "0.0.0.0", EXPLORER_PORT)
+        logger.info(f"Explorer listening on port {EXPLORER_PORT}")
 
         async with server:
           await server.serve_forever()

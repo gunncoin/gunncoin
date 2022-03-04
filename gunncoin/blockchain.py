@@ -5,7 +5,7 @@ import math
 import random
 from hashlib import sha256
 from time import time
-from gunncoin.types import BlockType, TransactionType
+from gunncoin.server.types import BlockType, TransactionType
 from gunncoin.transactions import block_reward_transaction, create_transaction, validate_transaction
 
 import structlog

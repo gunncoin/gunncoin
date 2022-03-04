@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, post_load
 from marshmallow_oneofschema import OneOfSchema
 
-from explorer.explorer_schema import Transaction, Balance
+from gunncoin.explorer.schema import Transaction, Balance
 
 
 class BalanceMessage(Schema):

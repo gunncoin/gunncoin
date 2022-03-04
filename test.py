@@ -2,14 +2,14 @@ import asyncio
 import requests
 from explorer.explorer_messages import create_balance_request, create_transaction_request
 from gunncoin.blockchain import Blockchain
-from gunncoin.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
-from gunncoin.peers import P2PProtocol
-from gunncoin.schema import Block, Peer, Transaction
+from gunncoin.server.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
+from gunncoin.server.peers import P2PProtocol
+from gunncoin.server.schema import Block, Peer, Transaction
 from gunncoin.transactions import create_transaction
 from nacl.signing import SigningKey
 import nacl
 import structlog
-from trusted_nodes import TrustedNodes
+from gunncoin.util.trusted_nodes import TrustedNodes
 
 logger = structlog.getLogger()
 

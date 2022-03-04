@@ -2,16 +2,17 @@ import asyncio
 from asyncio import StreamReader, StreamWriter
 from random import choice
 from gunncoin.blockchain import Blockchain
-from gunncoin.connections import ConnectionPool
-from gunncoin.peers import P2PProtocol
+from gunncoin.server.connections import ConnectionPool
+from gunncoin.server.peers import P2PProtocol
 from gunncoin.transactions import block_reward_transaction
-from trusted_nodes import TrustedNodes
+from gunncoin.util.trusted_nodes import TrustedNodes
+from gunncoin.util.constants import NODE_PORT, CONFIG_PORT
 
 import structlog
 from marshmallow.exceptions import MarshmallowError
 
-from gunncoin.messages import BaseSchema, create_block_message, create_peers_message, create_ping_message
-from gunncoin.utils import get_external_ip
+from gunncoin.server.messages import BaseSchema, create_block_message, create_peers_message, create_ping_message
+from gunncoin.util.utils import get_external_ip
 
 logger = structlog.getLogger()  # <7>
 
@@ -22,7 +23,7 @@ class Server:
         self.connection_pool = connection_pool
         self.p2p_protocol = P2PProtocol(self)
         self.external_ip = "127.0.0.1"
-        self.external_port = 4866
+        self.external_port = NODE_PORT
 
         if not (blockchain and connection_pool):
             logger.error(
@@ -76,7 +77,7 @@ class Server:
             trusted_node = TrustedNodes.get_random_node()
             logger.info(f"Discovery Protocol: {trusted_node}")
 
-            reader, writer = await asyncio.open_connection(trusted_node, 4866)
+            reader, writer = await asyncio.open_connection(trusted_node, NODE_PORT)
 
             # send them a ping message so that they give us an update
             ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
@@ -99,11 +100,17 @@ class Server:
     async def setup(self):
         await self.get_external_ip()
 
-        asyncio.create_task(self.listen())
-        asyncio.create_task(self.connect_to_network())
+        listen_task = asyncio.create_task(self.listen())
+        connect_task = asyncio.create_task(self.connect_to_network())
+        
+        await listen_task
+        await connect_task
 
-    async def start_mining(self, public_address: str):
-        await asyncio.sleep(5)
+    async def start_mining(self, public_address):
+        mine_task = asyncio.create_task(self.mine_forever(public_address))
+        await mine_task
+
+    async def mine_forever(self, public_address: str):
         logger.info("START MINING")
 
         while True:
@@ -120,7 +127,7 @@ class Server:
                         block_message,
                     )
 
-                await asyncio.sleep(5)
+                await asyncio.sleep(5) # TODO: Remove and increase difficulty
             except Exception as e:
                 logger.error(e)
                 break

@@ -2,8 +2,9 @@ import sys
 import asyncio
 
 from gunncoin.blockchain import Blockchain
-from gunncoin.connections import ConnectionPool
-from gunncoin.server import Server
+from gunncoin.config.config import Config
+from gunncoin.server.connections import ConnectionPool
+from gunncoin.server.server import Server
 
 import structlog
 logger = structlog.getLogger()
@@ -19,21 +20,15 @@ blockchain = Blockchain()  # <1>
 connection_pool = ConnectionPool()  # <2>
 
 server = Server(blockchain, connection_pool)
+config = Config(server)
 
 async def main():
-    miner_address = ""
-    with open("address.txt") as f:
-        miner_address = f.readline()
-
-    if miner_address == "":
-        logger.error("no valid miner address")
-        return
-
-    logger.info("Mining address: " + miner_address)
-
     # Start the server
-    await server.setup()
-    await server.start_mining(public_address=miner_address)
+    server_task = asyncio.create_task(server.setup())
+    config_task = asyncio.create_task(config.setup())
+
+    await server_task
+    await config_task
     
 
 asyncio.run(main())

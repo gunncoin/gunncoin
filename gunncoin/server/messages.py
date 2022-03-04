@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, post_load
 from marshmallow_oneofschema import OneOfSchema
 
-from gunncoin.schema import Peer, Block, Transaction, Ping, Balance
+from gunncoin.server.schema import Peer, Block, Transaction, Ping, Balance
 
 
 class PeersMessage(Schema):
