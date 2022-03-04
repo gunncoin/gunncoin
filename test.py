@@ -1,11 +1,13 @@
 import asyncio
 import requests
-from explorer.explorer_messages import create_balance_request, create_transaction_request
+from gunncoin.explorer.messages import create_balance_request, create_transaction_request
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
 from gunncoin.server.peers import P2PProtocol
 from gunncoin.server.schema import Block, Peer, Transaction
 from gunncoin.transactions import create_transaction
+from gunncoin.util.constants import NODE_PORT
+from gunncoin.util.utils import canyouseeme
 from nacl.signing import SigningKey
 import nacl
 import structlog
@@ -43,8 +45,9 @@ tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 #req = create_transaction_request(transaction)
 req = create_balance_request("81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c")
 
-async def test():
 
+
+async def test():
     reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
     await P2PProtocol.send_message(writer, req)
     data = await reader.readuntil(b"\n")  # <3>
@@ -56,4 +59,18 @@ async def test():
 
     #await P2PProtocol.send_message(writer, tx_message2)
 
-asyncio.run(test())
+async def handle_connection(reader, writer):
+    logger.info("NEW CONNECTION!")
+
+async def listen( hostname="0.0.0.0"):
+    server = await asyncio.start_server(handle_connection, hostname, port=NODE_PORT)
+    logger.info(f"Server listening on port {NODE_PORT}")
+
+    logger.info("RUNNING TEST")
+    logger.info(canyouseeme())
+    logger.info("Hi")
+    async with server:
+        await server.serve_forever()
+
+
+asyncio.run(listen())

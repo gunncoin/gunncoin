@@ -5,6 +5,7 @@ import logging
 from urllib.parse import urlparse
 from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
+from constants import NODE_PORT
 
 from gevent import socket
 import gevent
@@ -361,7 +362,7 @@ def _communicate_with_igd(port=15441,
     return success
 
 
-def ask_to_open_port(port=15441, desc="UpnpPunch", retries=3, protos=("TCP", "UDP")):
+def ask_to_open_port(port=NODE_PORT, desc="UpnpPunch", retries=3, protos=("TCP", "UDP")):
     logger.debug("Trying to open port %d." % port)
     return _communicate_with_igd(port=port,
                           desc=desc,
@@ -370,7 +371,7 @@ def ask_to_open_port(port=15441, desc="UpnpPunch", retries=3, protos=("TCP", "UD
                           protos=protos)
 
 
-def ask_to_close_port(port=15441, desc="UpnpPunch", retries=3, protos=("TCP", "UDP")):
+def ask_to_close_port(port=NODE_PORT, desc="UpnpPunch", retries=3, protos=("TCP", "UDP")):
     logger.debug("Trying to close port %d." % port)
     # retries=1 because multiple successes cause 500 response and failure
     return _communicate_with_igd(port=port,
@@ -381,6 +382,8 @@ def ask_to_close_port(port=15441, desc="UpnpPunch", retries=3, protos=("TCP", "U
 
 
 if __name__ == "__main__":
+    # Test upnp
+
     from gevent import monkey
     monkey.patch_all()
     logging.basicConfig(level=logging.DEBUG)
@@ -388,10 +391,9 @@ if __name__ == "__main__":
 
     s = time.time()
     print("Opening port...")
-    print("Success:", ask_to_open_port(15443, "ZeroNet", protos=["TCP"]))
+    print("Success:", ask_to_open_port(NODE_PORT, "gunncoin", protos=["TCP"]))
     print("Done in", time.time() - s)
 
-
     print("Closing port...")
-    print("Success:", ask_to_close_port(15443, "ZeroNet", protos=["TCP"]))
+    print("Success:", ask_to_close_port(NODE_PORT, "gunncoin", protos=["TCP"]))
     print("Done in", time.time() - s)
