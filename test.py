@@ -7,7 +7,7 @@ from gunncoin.server.peers import P2PProtocol
 from gunncoin.server.schema import Block, Peer, Transaction
 from gunncoin.transactions import create_transaction
 from gunncoin.util.constants import NODE_PORT
-from gunncoin.util.upnp import ask_to_close_port
+from gunncoin.util.upnp import ask_to_close_port, ask_to_open_port
 from gunncoin.util.utils import canyouseeme
 from nacl.signing import SigningKey
 import nacl
@@ -63,7 +63,8 @@ async def test():
 async def handle_connection(reader, writer):
     logger.info("NEW CONNECTION!")
 
-ask_to_close_port(port=15443)
+ask_to_open_port(port=15443)
+#ask_to_close_port(port=15443)
 
 async def listen( hostname="0.0.0.0"):
     server = await asyncio.start_server(handle_connection, hostname, port=15443)

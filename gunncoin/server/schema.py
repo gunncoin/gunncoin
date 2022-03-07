@@ -48,5 +48,5 @@ class Ping(Schema):
     peer_count = fields.Int()
     is_miner = fields.Bool()
 
-class Balance(Schema):
-    public_address = fields.Str(required=True)
+class Consensus(Schema):
+    blocks = fields.List(fields.Nested(Block()))

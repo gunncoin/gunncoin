@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, post_load
 from marshmallow_oneofschema import OneOfSchema
 
-from gunncoin.server.schema import Peer, Block, Transaction, Ping, Balance
+from gunncoin.server.schema import Peer, Block, Transaction, Ping, Consensus
 
 
 class PeersMessage(Schema):
@@ -39,6 +39,15 @@ class PingMessage(Schema):
         data["name"] = "ping"
         return data
 
+class ConsensusMessage(Schema):
+    payload = fields.Nested(Consensus)
+
+    @post_load
+    def add_name(self, data, **kwargs):
+        data["name"] = "consensus"
+        return data
+        
+
 class MessageDisambiguation(OneOfSchema):
     type_field = "name"
     type_schemas = {
@@ -46,6 +55,7 @@ class MessageDisambiguation(OneOfSchema):
         "peers": PeersMessage,
         "block": BlockMessage,
         "transaction": TransactionMessage,
+        "consensus": ConsensusMessage
     }
 
     def get_obj_type(self, obj):
@@ -110,6 +120,21 @@ def create_transaction_message(external_ip, external_port, tx):
             "message": {
                 "name": "transaction",
                 "payload": tx,
+            },
+        }
+    )
+
+def create_consensus_message(external_ip, external_port, blocks, miner_ip, miner_port):
+    return BaseSchema().dumps(
+        {
+            "meta": meta(external_ip, external_port),
+            "message": {
+                "name": "consensus",
+                "payload": {
+                    "blocks": blocks,
+                    "miner_ip": miner_ip,
+                    "miner_port": miner_port
+                },
             },
         }
     )

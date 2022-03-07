@@ -6,8 +6,10 @@ import math
 import random
 from hashlib import sha256
 from time import time
-from gunncoin.server.messages import create_transaction_message
+import qrcode
+import io
 
+from gunncoin.server.messages import create_transaction_message
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.peers import P2PProtocol
 from gunncoin.config.messages import BaseSchema, create_config_response
@@ -54,15 +56,25 @@ class Config:
         await writer.wait_closed()
 
     async def setup(self):
+        self.display_qr_code()
         listen_task = asyncio.create_task(self.listen())
         await listen_task
 
     async def listen(self):
         server = await asyncio.start_server(self.handle_connection, "0.0.0.0", CONFIG_PORT)
         logger.info(f"Config listening on port {CONFIG_PORT}")
+        
 
         async with server:
           await server.serve_forever()
+        
+    def display_qr_code(self):
+        qr = qrcode.QRCode()
+        qr.add_data(json.dumps({"ip": "10.0.0.144", "port": CONFIG_PORT}))
+        f = io.StringIO()
+        qr.print_ascii(out=f)
+        f.seek(0)
+        print(f.read())
 
     @staticmethod
     async def send_message(writer, message):

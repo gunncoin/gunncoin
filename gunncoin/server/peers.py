@@ -1,11 +1,13 @@
 import asyncio
-from gunncoin.blockchain import Blockchain
+from gunncoin.blockchain import Blockchain, BlockchainError
 from gunncoin.server.connections import ConnectionPool
 from gunncoin.explorer.messages import BalanceResponse, create_balance_request
+from gunncoin.server.types import BlockType
 
 import structlog
 
 from gunncoin.server.messages import (
+    create_consensus_message,
     create_peers_message,
     create_block_message,
     create_transaction_message,
@@ -33,12 +35,20 @@ class P2PProtocol:
     async def send_message(writer, message):
         writer.write(message.encode() + b"\n")
 
+    async def send_to_peers(self, message, ignore_writer):
+        for peer in self.connection_pool.get_alive_peers(15):
+            if ConnectionPool.compare_address(peer[0], ignore_writer):
+                continue
+
+            await self.send_message(peer[1], message)
+
     async def handle_message(self, message, writer):
         message_handlers = {
             "block": self.handle_block,
             "ping": self.handle_ping,
             "peers": self.handle_peers,
             "transaction": self.handle_transaction,
+            "consensus": self.handle_consensus,
         }
 
         handler = message_handlers.get(message["name"])
@@ -104,12 +114,11 @@ class P2PProtocol:
         # Add the tx to our pool, and propagate it to our peers
         if tx not in self.blockchain.pending_transactions:
             self.blockchain.pending_transactions.append(tx)     
-            for peer in self.connection_pool.get_alive_peers(20):
-                await self.send_message(
-                    peer[1],
+            await self.send_to_peers(
                     create_transaction_message(
                         self.server.external_ip, self.server.external_port, tx
                     ),
+                    ignore_writer=writer
                 )
 
     async def handle_block(self, message, writer):
@@ -123,8 +132,13 @@ class P2PProtocol:
             logger.error("Block is invalid")
             return
 
-        if(self.blockchain.has_block(block)):
-            logger.info("Already have this block")
+        try:
+            if(self.blockchain.has_block(block)):
+                logger.info("Already have this block")
+                return
+        except BlockchainError as e:
+            logger.warning(e)
+            # TODO: Handle consensus
             return
 
         # Give the block to the blockain to append if valid
@@ -135,19 +149,13 @@ class P2PProtocol:
             self.blockchain.remove_transaction(transaction)
             # TODO: handle transactions in explorer dict
 
-        # Transmit the block to our peers
-        for peer in self.connection_pool.get_alive_peers(20):
-
-            # Don't send it back to the guy who sent up the message
-            if(ConnectionPool.compare_address(peer[0], writer)):
-                continue
-
-            await self.send_message(
-                peer[1],
-                create_block_message(
-                    self.server.external_ip, self.server.external_port, block
-                ),
-            )
+        # Transmit the block to our peers, but not to the guy who sent use the message
+        await self.send_to_peers(
+            create_block_message(
+                self.server.external_ip, self.server.external_port, block
+            ), 
+            ignore_writer=writer
+        )
 
     async def handle_peers(self, message, writer):
         """
@@ -185,3 +193,25 @@ class P2PProtocol:
 
             # Send the peer a PING message
             await self.send_message(peer_writer, ping_message)
+
+    async def handle_consensus(self, message, writer):
+        new_blocks: list[BlockType] = message["payload"]["blocks"]
+        miner_ip = message["payload"]["miner_ip"]
+        miner_port = message["payload"]["miner_port"]
+
+        if not Blockchain.validate_chain(new_blocks):
+            logger.warning("Consensus payload contains invalid blocks")
+            return
+
+        min_height = new_blocks[0]["height"]
+        if new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height]["hash"]:
+            logger.warning("New blocks won't fit in our blockchain, requesting new blocks")
+            logger.info("TODO: request new blocks...") # send request to miner ip/port
+            return
+
+        self.send_to_peers(create_consensus_message(
+            self.server.external_ip, self.server.external_port, new_blocks,
+            miner_ip, miner_port
+        ), ignore_writer=writer)
+
+        

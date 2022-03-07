@@ -1,8 +1,9 @@
 import io
+import json
 import qrcode
 
 qr = qrcode.QRCode()
-qr.add_data("10.0.0.1")
+qr.add_data(json.dumps({"ip": "10.0.0.1", "port": 123}))
 f = io.StringIO()
 qr.print_ascii(out=f)
 f.seek(0)

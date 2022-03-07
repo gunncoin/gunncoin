@@ -5,7 +5,6 @@ import re
 import sys
 import urllib.request
 import urllib.parse
-from bs4 import BeautifulSoup
 from gunncoin.util.constants import NODE_PORT
 
 logger = structlog.getLogger(__name__)

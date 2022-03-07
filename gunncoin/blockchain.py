@@ -12,6 +12,8 @@ import structlog
 
 logger = structlog.getLogger("blockchain")
 
+class BlockchainError(Exception):
+    pass
 
 class Blockchain(object):
     def __init__(self):
@@ -78,6 +80,14 @@ class Blockchain(object):
         block_string = json.dumps(block, sort_keys=True).encode()
         return sha256(block_string).hexdigest()
 
+    @staticmethod
+    def validate_chain(blockchain: list[BlockType]):
+        for i in range(1, len(blockchain)):
+            if blockchain[i-1]["previous_hash"] != blockchain[i]["hash"]:
+                return False
+
+        return True
+
     @property
     def last_block(self) -> BlockType:
         # Returns the last block in the chain (if there are blocks)
@@ -90,8 +100,10 @@ class Blockchain(object):
         if self.last_block["height"] < block["height"] or block["height"] >= len(self.chain):
             return False
 
-        # TODO: Check for conflicts, and figure out a concensus
-        return self.chain[block["height"]]["hash"] == block["hash"]
+        if self.chain[block["height"]]["hash"] != block["hash"]:
+            raise BlockchainError("Incoming block conflicts with local blockchain")
+
+        return True
 
     def valid_block(self, block: BlockType):
         # Check if a block's hash is less than the target...
@@ -171,4 +183,4 @@ class Blockchain(object):
         # we found a valid block, reward reset our pending_transactions and add it to our blockchain
         self.pending_transactions = []
         self.chain.append(new_block)
-        logger.info("Found a new block: " + json.dumps(new_block))
+        logger.info(f"Found block {new_block['height']} with hash {new_block['hash']}")
