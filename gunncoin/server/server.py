@@ -113,7 +113,12 @@ class Server:
 
     async def mine_forever(self, public_address: str):
         logger.info("START MINING")
-        await self.blockchain.make_conflicting_block(5)
+        #await self.blockchain.make_conflicting_block(5)
+        """
+        block_message = ""
+        reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), NODE_PORT)
+        await P2PProtocol.send_message(writer, block_message)
+        """
 
         while True:
             try:
@@ -129,7 +134,7 @@ class Server:
                         block_message,
                     )
 
-                await asyncio.sleep(5) # TODO: Remove and increase difficulty
+                await asyncio.sleep(0.5) # TODO: Remove and increase difficulty
             except Exception as e:
                 logger.error(e)
                 break

@@ -138,7 +138,7 @@ class P2PProtocol:
                 return
         except BlockchainError as e:
             logger.warning(e)
-            # TODO: Handle consensus
+            logger.info("Send them consensus message to resolve conflict")
             await self.send_message(writer, create_consensus_message(
                 self.server.external_ip, self.server.external_port,
                 blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 0: -1] # Send max of 10 newest blocks
@@ -208,16 +208,18 @@ class P2PProtocol:
         logger.info("Received consensus request")
         new_blocks: list[BlockType] = message["payload"]["blocks"]
         logger.info(new_blocks)
-        miner_ip = message["payload"]["miner_ip"]
-        miner_port = message["payload"]["miner_port"]
-
-        if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
-            logger.warning("We have newer blocks than them, ignore consensus message")
-            return
 
         # Check if the new blocks are valid
         if not Blockchain.validate_chain(new_blocks):
             logger.warning("Consensus payload contains invalid blocks")
+            return
+
+        if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
+            logger.warning("We have newer blocks than them, send them our blocks")
+            await self.send_message(writer, create_consensus_message(
+                self.server.external_ip, self.server.external_port,
+                blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 0: -1] # Send max of 10 newest blocks
+            ))
             return
 
         # Check if new blocks will work with our local blockchain

@@ -45,7 +45,7 @@ tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 #req = create_transaction_request(transaction)
 req = create_config_request(public_address="034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684", start_mining=True)
 
-block_message =create_block_message("127.0.0.1", 8888, {"height": 5, "transactions": [], "previous_hash": "0000bd60dc6a679df711dfb76f2028338a52a645984148b27405f01018a2f50e", "nonce": "92771b93a3fcde89", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646683687, "hash": "0000bba2b71e0013b34e273d0406f37765d2d5937520efb6583bea3104da9079"})
+block_message =create_block_message("127.0.0.1", 8888, {"height": 5, "transactions": [], "previous_hash": "000079d51f00700cbefcb21da0f5f0ec19871d25628c449eb21ec49dffd482b3", "nonce": "248d3c540e8d3fe2", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646683818, "hash": "00006388e837e95242569704499f169c3840055ad7a1fbf8f8354d9ee369901a"})
 
 async def test():
 
