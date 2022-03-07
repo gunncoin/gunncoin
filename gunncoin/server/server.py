@@ -102,6 +102,7 @@ class Server:
 
         listen_task = asyncio.create_task(self.listen())
         connect_task = asyncio.create_task(self.connect_to_network())
+
         
         await listen_task
         await connect_task
@@ -112,6 +113,7 @@ class Server:
 
     async def mine_forever(self, public_address: str):
         logger.info("START MINING")
+        await self.blockchain.make_conflicting_block(9)
 
         while True:
             try:

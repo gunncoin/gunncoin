@@ -6,6 +6,7 @@ import math
 import random
 from hashlib import sha256
 from time import time
+from gunncoin.util.utils import get_local_ip
 import qrcode
 import io
 
@@ -27,6 +28,7 @@ class Config:
         self.server: Server = server
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
+        logger.info("App connected to miner")
         while True:
             try:
                 # Wait forever on new data to arrive
@@ -63,14 +65,13 @@ class Config:
     async def listen(self):
         server = await asyncio.start_server(self.handle_connection, "0.0.0.0", CONFIG_PORT)
         logger.info(f"Config listening on port {CONFIG_PORT}")
-        
 
         async with server:
           await server.serve_forever()
         
     def display_qr_code(self):
         qr = qrcode.QRCode()
-        qr.add_data(json.dumps({"ip": "10.0.0.144", "port": CONFIG_PORT}))
+        qr.add_data(json.dumps({"ip": "10.244.19.28", "port": CONFIG_PORT}))
         f = io.StringIO()
         qr.print_ascii(out=f)
         f.seek(0)

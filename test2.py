@@ -6,7 +6,8 @@ from gunncoin.server.messages import PingMessage, create_block_message, create_p
 from gunncoin.server.peers import P2PProtocol
 from gunncoin.server.schema import Block, Peer, Transaction
 from gunncoin.transactions import create_transaction
-from gunncoin.util.constants import CONFIG_PORT
+from gunncoin.util.constants import CONFIG_PORT, NODE_PORT
+from gunncoin.util.utils import get_local_ip
 from nacl.signing import SigningKey
 import nacl
 import structlog
@@ -44,10 +45,12 @@ tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 #req = create_transaction_request(transaction)
 req = create_config_request(public_address="034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684", start_mining=True)
 
+block_message =create_block_message("127.0.0.1", 8888, {"height": 9, "transactions": [], "previous_hash": "0000863ab8d19c6fa8f131630a9e185dfe6caafbd38250d446bc93f5003f65dd", "nonce": "85bac37889501f21", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646682018, "hash": "0000428f62503b8462d02f151a2a3850eff91974db4e3511697ce249deebf92f"})
+
 async def test():
 
-    reader, writer = await asyncio.open_connection("127.0.0.1", CONFIG_PORT)
-    await P2PProtocol.send_message(writer, req)
+    reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), NODE_PORT)
+    await P2PProtocol.send_message(writer, block_message)
     data = await reader.readuntil(b"\n")  # <3>
     decoded_data = data.decode("utf8").strip()  # <4>
 

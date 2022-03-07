@@ -35,9 +35,9 @@ class P2PProtocol:
     async def send_message(writer, message):
         writer.write(message.encode() + b"\n")
 
-    async def send_to_peers(self, message, ignore_writer):
+    async def send_to_peers(self, message, ignore_writer=None):
         for peer in self.connection_pool.get_alive_peers(15):
-            if ConnectionPool.compare_address(peer[0], ignore_writer):
+            if ignore_writer and ConnectionPool.compare_address(peer[0], ignore_writer):
                 continue
 
             await self.send_message(peer[1], message)
@@ -139,6 +139,10 @@ class P2PProtocol:
         except BlockchainError as e:
             logger.warning(e)
             # TODO: Handle consensus
+            self.send_message(writer, create_consensus_message(
+                self.server.external_ip, self.server.external_port,
+                blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 0: -1] # Send max of 10 newest blocks
+            ))
             return
 
         # Give the block to the blockain to append if valid
@@ -195,23 +199,34 @@ class P2PProtocol:
             await self.send_message(peer_writer, ping_message)
 
     async def handle_consensus(self, message, writer):
+        """
+        We received a consenus request
+
+        We likely sent them a block that they don't agree with, so they gave us their updated blocks
+        """
+
+        logger.info("Received consensus request")
         new_blocks: list[BlockType] = message["payload"]["blocks"]
+        logger.info(new_blocks)
         miner_ip = message["payload"]["miner_ip"]
         miner_port = message["payload"]["miner_port"]
 
+        if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
+            logger.warning("We have newer blocks than them, ignore consensus message")
+            return
+
+        # Check if the new blocks are valid
         if not Blockchain.validate_chain(new_blocks):
             logger.warning("Consensus payload contains invalid blocks")
             return
 
+        # Check if new blocks will work with our local blockchain
         min_height = new_blocks[0]["height"]
         if new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height]["hash"]:
             logger.warning("New blocks won't fit in our blockchain, requesting new blocks")
             logger.info("TODO: request new blocks...") # send request to miner ip/port
             return
 
-        self.send_to_peers(create_consensus_message(
-            self.server.external_ip, self.server.external_port, new_blocks,
-            miner_ip, miner_port
-        ), ignore_writer=writer)
-
+        # Passed checks, so let's add the blocks to our chain
+        self.blockchain.merge_blockchain(new_blocks)
         

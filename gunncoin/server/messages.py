@@ -124,7 +124,7 @@ def create_transaction_message(external_ip, external_port, tx):
         }
     )
 
-def create_consensus_message(external_ip, external_port, blocks, miner_ip, miner_port):
+def create_consensus_message(external_ip, external_port, blocks):
     return BaseSchema().dumps(
         {
             "meta": meta(external_ip, external_port),
@@ -132,8 +132,6 @@ def create_consensus_message(external_ip, external_port, blocks, miner_ip, miner
                 "name": "consensus",
                 "payload": {
                     "blocks": blocks,
-                    "miner_ip": miner_ip,
-                    "miner_port": miner_port
                 },
             },
         }

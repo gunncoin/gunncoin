@@ -138,6 +138,17 @@ class Blockchain(object):
                 self.pending_transactions.remove(t)
                 return
 
+    def merge_blockchain(self, new_blocks: list[BlockType]):
+        """
+        Called by consensus algorithm to give us updated state of blocks
+        This shouldn't be called without the proper checks (check peers.py)
+        """
+
+        # Delete blocks that are going to be replaced
+        del self.chain[new_blocks[0]["height"]:-1]
+
+        self.chain.extend(new_blocks)
+
     def recalculate_target(self, block_index):
         """
         Returns the number we need to get below to mine a block
@@ -183,4 +194,24 @@ class Blockchain(object):
         # we found a valid block, reward reset our pending_transactions and add it to our blockchain
         self.pending_transactions = []
         self.chain.append(new_block)
-        logger.info(f"Found block {new_block['height']} with hash {new_block['hash']}")
+        #logger.info(f"Found block {new_block['height']} with hash {new_block['hash']}")
+        logger.info(f"Found new block {json.dumps(new_block)}")
+
+    async def make_conflicting_block(self, height):
+        while True:
+            block = self.create_block(
+                mined_by="",
+                height=height,
+                transactions=self.pending_transactions,
+                previous_hash=self.chain[height-1]["hash"] if self.last_block else None,
+                nonce=format(random.getrandbits(64), "x"),
+                target=self.target,
+                timestamp=int(time()),
+            )
+
+            if self.valid_block(block):
+                break
+
+            await asyncio.sleep(0)
+
+        logger.info(f"Found conflicting block {json.dumps(block)}")

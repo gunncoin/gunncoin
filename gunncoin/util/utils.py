@@ -3,6 +3,7 @@ import aiohttp
 import structlog
 import re
 import sys
+import socket
 import urllib.request
 import urllib.parse
 from gunncoin.util.constants import NODE_PORT
@@ -19,6 +20,14 @@ async def get_external_ip():
             ip = response_json["ip"]
             logger.info(f"Found external IP: {ip}")
             return ip
+
+def get_local_ip():
+    print("try get localip")
+    hostname = socket.gethostname()
+    print(hostname)
+    local_ip = socket.gethostbyname(hostname)
+    print(local_ip)
+    return local_ip
 
 def canyouseeme(port=NODE_PORT):
     context = ssl._create_unverified_context() # Ignore SSL: CERTIFICATE_VERIFY_FAILED
