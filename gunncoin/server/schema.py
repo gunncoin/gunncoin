@@ -36,7 +36,6 @@ class Block(Schema):
         if data["hash"] != Blockchain.hash(block):
             raise ValidationError("Fraudulent block: hash is wrong")
 
-
 class Peer(Schema):
     ip = fields.Str(required=True)
     port = fields.Int(required=True)
