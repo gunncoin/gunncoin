@@ -83,7 +83,7 @@ class Blockchain(object):
     @staticmethod
     def validate_chain(blockchain: list[BlockType]):
         for i in range(1, len(blockchain)):
-            if blockchain[i-1]["previous_hash"] != blockchain[i]["hash"]:
+            if blockchain[i-1]["hash"] != blockchain[i]["previous_hash"]:
                 return False
 
         return True
