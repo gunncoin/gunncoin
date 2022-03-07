@@ -139,7 +139,7 @@ class P2PProtocol:
         except BlockchainError as e:
             logger.warning(e)
             # TODO: Handle consensus
-            self.send_message(writer, create_consensus_message(
+            await self.send_message(writer, create_consensus_message(
                 self.server.external_ip, self.server.external_port,
                 blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 0: -1] # Send max of 10 newest blocks
             ))

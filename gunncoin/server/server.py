@@ -113,7 +113,7 @@ class Server:
 
     async def mine_forever(self, public_address: str):
         logger.info("START MINING")
-        await self.blockchain.make_conflicting_block(9)
+        await self.blockchain.make_conflicting_block(5)
 
         while True:
             try:
