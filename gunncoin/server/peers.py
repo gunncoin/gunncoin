@@ -141,7 +141,7 @@ class P2PProtocol:
             logger.info("Send them consensus message to resolve conflict")
             await self.send_message(writer, create_consensus_message(
                 self.server.external_ip, self.server.external_port,
-                blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 0: -1] # Send max of 10 newest blocks
+                chain=self.blockchain.chain
             ))
             return
 
@@ -218,7 +218,7 @@ class P2PProtocol:
             logger.warning("We have newer blocks than them, send them our blocks")
             await self.send_message(writer, create_consensus_message(
                 self.server.external_ip, self.server.external_port,
-                blocks=self.blockchain.chain[-10 if len(self.blockchain.chain) > 11 else 1: -1] # Send max of 10 newest blocks
+                chain=self.blockchain.chain
             ))
             return
 

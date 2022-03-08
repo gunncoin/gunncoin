@@ -124,14 +124,15 @@ def create_transaction_message(external_ip, external_port, tx):
         }
     )
 
-def create_consensus_message(external_ip, external_port, blocks):
+def create_consensus_message(external_ip, external_port, chain: list):
     return BaseSchema().dumps(
         {
             "meta": meta(external_ip, external_port),
             "message": {
                 "name": "consensus",
                 "payload": {
-                    "blocks": blocks,
+                    "blocks": chain[-10 if len(chain) > 11 else 1: -1] # Send max of 10 newest blocks
+
                 },
             },
         }
