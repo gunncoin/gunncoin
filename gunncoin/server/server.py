@@ -121,7 +121,7 @@ class Server:
         """
         logger.info("START MINING")
         #await self.blockchain.make_conflicting_block(4)
-        block_message = create_block_message("127.0.0.1", 8888, {"height": 4, "transactions": [], "previous_hash": "0000554933272af14465225fda371ddaced5078480066b3c9cf8ef647e372309", "nonce": "a8e8a2903899d4bf", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646697432, "hash": "0000a41955a42f11912786c0fa4495cc47595f72f9daee030f56a9b834e04364"})
+        block_message = create_block_message("127.0.0.1", 8888, {"height": 4, "transactions": [], "previous_hash": "0000433db5057691f880a470b003ace60b680484ccf88a4504c1357937c80ee9", "nonce": "66efc23ecb2762b1", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646775103, "hash": "0000119054af7cd9112ec7241f79fa449e66827219ce9d8048af561e58b734df"})
         await self.p2p_protocol.send_to_peers(block_message)
         
         return
