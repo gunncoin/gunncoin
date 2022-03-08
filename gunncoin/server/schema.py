@@ -16,7 +16,7 @@ class Transaction(Schema):
         ordered = True
 
 class Block(Schema):
-    mined_by = fields.Str(required=False)
+    mined_by = fields.Str(required=True)
     transactions = fields.List(fields.Nested(Transaction()))
     height = fields.Int(required=True)
     target = fields.Str(required=True)

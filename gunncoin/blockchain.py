@@ -55,12 +55,13 @@ class Blockchain(object):
         mined_by, height, transactions, previous_hash, nonce, target, timestamp=None
     ) -> BlockType:
         block: BlockType = {
+            "mined_by": mined_by,
             "height": height,
             "transactions": transactions,
             "previous_hash": previous_hash,
             "nonce": nonce,
             "target": target,
-            "timestamp": timestamp or int(time()),
+            "timestamp": timestamp if timestamp != None else int(time()),
         }
 
         # Get the hash of this new block, and add it to the block
