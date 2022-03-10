@@ -28,6 +28,14 @@ class Explorer:
         self.last_block_height = 0
       
     def recalculate(self):
+        """
+        Recalculates balance of all address's
+        """
+
+        if self.last_block_height == self.blockchain.last_block["height"]:
+            # Already up to date
+            return
+
         for block in self.blockchain.chain[self.last_block_height:]:
             for transaction in block["transactions"]:
                 receiver = transaction["receiver"]

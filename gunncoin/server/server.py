@@ -121,10 +121,10 @@ class Server:
         """
         logger.info("START MINING")
         #await self.blockchain.make_conflicting_block(4)
-        block_message = create_block_message("127.0.0.1", 8888, {"height": 4, "transactions": [], "previous_hash": "0000fe89282b9e3b4c99a09fb712ab880fa4cdadef0f15a1d85878ade3c60b7f", "nonce": "5f92ca80c10d6dad", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646775586, "hash": "0000cff7dd7a8cc3b4953b0f812dbebf91918ea7128958f218935f1eb5ed99ab"})
-        await self.p2p_protocol.send_to_peers(block_message)
+        #block_message = create_block_message("127.0.0.1", 8888, {"mined_by": "", "height": 4, "transactions": [], "previous_hash": "000021a8846415d729d408067d5bfc010a4e1e14ee0965f7263dcdb1c0831806", "nonce": "d4a9ca18fd731fa0", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646776288, "hash": "00004a56ba084ab01c628d9494fd118cf00cf14bda16c5cf4959b68fd35c85f4"})
+        #await self.p2p_protocol.send_to_peers(block_message)
+        #return
         
-        return
         while True:
             try:
                 # reward ourselves for when we solve the block

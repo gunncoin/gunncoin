@@ -224,9 +224,10 @@ class P2PProtocol:
 
         # Check if new blocks will work with our local blockchain
         min_height = new_blocks[0]["height"]
-        if new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height]["hash"]:
+        if new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height-1]["hash"]:
             logger.warning("New blocks won't fit in our blockchain, requesting new blocks")
-            logger.info("TODO: request new blocks...") # send request to miner ip/port
+            logger.info("TODO: request new blocks... If you see this, something bad happened and you should restart!") 
+            # send request to miner ip/port
             return
 
         # Passed checks, so let's add the blocks to our chain

@@ -199,6 +199,9 @@ class Blockchain(object):
         logger.info(f"Found new block {json.dumps(new_block)}")
 
     async def make_conflicting_block(self, height):
+        """
+        Help create conflicting block to test consensus protocol
+        """
         while True:
             block = self.create_block(
                 mined_by="",
