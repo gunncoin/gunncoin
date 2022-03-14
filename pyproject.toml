@@ -3,6 +3,10 @@ name = "gunn-coin"
 version = "0.1.0"
 description = ""
 authors = ["Dylan Lu <dylanelu@gmail.com>"]
+packages = [
+    { include = "miner.py" },
+    { include = "node.py" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
