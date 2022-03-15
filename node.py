@@ -23,6 +23,9 @@ Port must be on 4866 (GUNN)
 Port 48660 (GUNN0) is used to handle get/post requests regarding app
 We send a transaction request from a phone to here, which will then check for sufficient balance
 The message will assume that balance is correct, as signiture cannot be forged and node already verified (node is trusted)
+
+To install...
+pyinstaller --onefile node.py --hidden-import=_cffi_backend
 """
 
 async def main():

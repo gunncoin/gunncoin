@@ -14,6 +14,9 @@ We setup the networking in 3 possible ways:
 - Check for UPNP: if it works, port forward the right port and we're good
 - Tell the user to manually configure port forwarding on firewall
 - TODO: Try nat punchthrough. This is hard?
+
+To install...
+pyinstaller --onefile miner.py --hidden-import=_cffi_backend
 """
 
 blockchain = Blockchain()  # <1>
