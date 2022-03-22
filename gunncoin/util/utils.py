@@ -22,12 +22,9 @@ async def get_external_ip():
             return ip
 
 def get_local_ip():
-    print("try get localip")
-    hostname = socket.gethostname()
-    print(hostname)
-    local_ip = socket.gethostbyname(hostname)
-    print(local_ip)
-    return local_ip
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
 
 def canyouseeme(port=NODE_PORT):
     context = ssl._create_unverified_context() # Ignore SSL: CERTIFICATE_VERIFY_FAILED

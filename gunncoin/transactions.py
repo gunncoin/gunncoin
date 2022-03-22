@@ -23,9 +23,9 @@ def create_transaction(
         "sender": public_key,
         "receiver": receiver,
         "amount": amount,
-        "timestamp": int(time()),
+        "timestamp": 1647737385,
     }
-    tx_bytes = json.dumps(tx, sort_keys=True).encode("ascii")
+    tx_bytes = json.dumps(tx, sort_keys=True, separators=(",",":")).encode("ascii")
 
     # Generate a signing key from the private key
     signing_key = SigningKey(private_key, encoder=HexEncoder)
@@ -68,7 +68,7 @@ def validate_transaction(tx: dict) -> bool:
     signature = data.pop("signature")
     signature_bytes = HexEncoder.decode(signature)
 
-    tx_bytes = json.dumps(data, sort_keys=True).encode("ascii")
+    tx_bytes = json.dumps(data, sort_keys=True, separators=(",",":")).encode("ascii")
 
     # Generate a verifying key from the public key
     verify_key = VerifyKey(public_key, encoder=HexEncoder)

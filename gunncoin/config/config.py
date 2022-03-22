@@ -71,7 +71,7 @@ class Config:
         
     def display_qr_code(self):
         qr = qrcode.QRCode()
-        qr.add_data(json.dumps({"ip": "10.244.19.28", "port": CONFIG_PORT}))
+        qr.add_data(json.dumps({"ip": get_local_ip(), "port": CONFIG_PORT}))
         f = io.StringIO()
         qr.print_ascii(out=f)
         f.seek(0)

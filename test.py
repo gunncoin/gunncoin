@@ -40,13 +40,14 @@ bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
 
+print(transaction)
+
+
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
 #req = create_transaction_request(transaction)
 req = create_balance_request("81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c")
-
-
 
 async def test():
     reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
@@ -63,7 +64,7 @@ async def test():
 async def handle_connection(reader, writer):
     logger.info("NEW CONNECTION!")
 
-ask_to_open_port(port=15443)
+#ask_to_open_port(port=15443)
 #ask_to_close_port(port=15443)
 
 async def listen( hostname="0.0.0.0"):
@@ -77,4 +78,4 @@ async def listen( hostname="0.0.0.0"):
         await server.serve_forever()
 
 
-asyncio.run(listen())
+#asyncio.run(listen())
