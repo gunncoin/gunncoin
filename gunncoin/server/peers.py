@@ -90,8 +90,17 @@ class P2PProtocol:
                         self.server.external_ip, self.server.external_port, block
                     ),
                 )
+            logger.info("Sent blocks")
+        elif block_height > self.blockchain.last_block["height"]:
+            logger.warning("New peer has more blocks than us, blockchain will be overritten")
+            await self.send_message(
+                writer,
+                create_consensus_message(
+                    self.server.external_ip, self.server.external_port,
+                    chain=self.blockchain.chain
+                )
+            )
 
-        logger.info("Sent blocks")
 
     async def handle_transaction(self, message, writer):
         """
@@ -203,6 +212,8 @@ class P2PProtocol:
         We received a consenus request
 
         We likely sent them a block that they don't agree with, so they gave us their updated blocks
+        We're getting all of their blocks because they think we are doing suspicious stuff...
+        Blockchain forks probably work happen! ...maybe... i hope....
         """
 
         logger.info("Received consensus request")
