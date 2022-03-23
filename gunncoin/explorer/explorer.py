@@ -27,9 +27,6 @@ class Explorer:
         self.database = {} # {"address": amount}
         self.last_block_height = 0
 
-        with open("database.json", "r") as file:
-            self.database = json.load(file)
-
         """
         TODO: transaction pool. miners who join are not informed of pending transactions
         that means that pending transactions are lost if everyone leaves :(
@@ -61,9 +58,6 @@ class Explorer:
                 self.database[sender] -= amount
 
         self.last_block_height = self.blockchain.last_block["height"]
-
-        with open("database.json", "w") as file:
-            json.dump(self.database, file)
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
         while True:

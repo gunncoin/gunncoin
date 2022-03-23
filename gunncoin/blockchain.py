@@ -21,7 +21,15 @@ class Blockchain(object):
         self.pending_transactions: list[TransactionType] = []
         self.target = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
-        self.create_genesis_block()
+        # Try reading saved blockchain, otherwise, reset/create new file and write to it
+        try:
+            with open("blockchain.json", "r") as r_file:
+                self.database = json.load(r_file)
+        except:
+            self.create_genesis_block()
+            with open("blockchain.json", "w") as w_file:
+                json.dump(self.database, w_file)
+
 
     def create_genesis_block(self):
         # Create the genesis block
@@ -126,6 +134,9 @@ class Blockchain(object):
     def add_block(self, block: BlockType):
         # TODO: Add proper validation logic here!
         self.chain.append(block)
+
+        with open("database.json", "w") as file:
+            json.dump(self.database, file)
 
     def add_transaction(self, transaction: TransactionType):
         if(validate_transaction(transaction)):
