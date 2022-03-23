@@ -82,7 +82,7 @@ class Server:
             reader, writer = await asyncio.open_connection(trusted_node, NODE_PORT)
 
             # send them a ping message so that they give us an update
-            ping_message = create_ping_message(self.external_ip, self.external_port, 0, 0, True)
+            ping_message = create_ping_message(self.external_ip, self.external_port, len(self.blockchain.chain), 0, True)
             await P2PProtocol.send_message(writer, ping_message)
 
             # manually listen for connections
