@@ -101,6 +101,9 @@ class P2PProtocol:
                 )
             )
 
+        logger.warning(block_height)
+        logger.warning(self.blockchain.last_block["height"])
+
 
     async def handle_transaction(self, message, writer):
         """
