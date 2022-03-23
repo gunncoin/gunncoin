@@ -24,11 +24,11 @@ class Blockchain(object):
         # Try reading saved blockchain, otherwise, reset/create new file and write to it
         try:
             with open("blockchain.json", "r") as r_file:
-                self.database = json.load(r_file)
+                self.blockchain = json.load(r_file)
         except:
             self.create_genesis_block()
             with open("blockchain.json", "w") as w_file:
-                json.dump(self.database, w_file)
+                json.dump(self.blockchain, w_file)
 
 
     def create_genesis_block(self):
@@ -135,8 +135,8 @@ class Blockchain(object):
         # TODO: Add proper validation logic here!
         self.chain.append(block)
 
-        with open("database.json", "w") as file:
-            json.dump(self.database, file)
+        with open("blockchain.json", "w") as file:
+            json.dump(self.blockchain, file)
 
     def add_transaction(self, transaction: TransactionType):
         if(validate_transaction(transaction)):
