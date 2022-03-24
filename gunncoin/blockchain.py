@@ -93,6 +93,7 @@ class Blockchain(object):
     def validate_chain(blockchain: list[BlockType]):
         for i in range(1, len(blockchain)):
             if blockchain[i-1]["hash"] != blockchain[i]["previous_hash"]:
+                logger.warning("valid chain failed at " + blockchain[i]["height"])
                 return False
 
         return True
@@ -205,7 +206,7 @@ class Blockchain(object):
 
         # we found a valid block, reward reset our pending_transactions and add it to our blockchain
         self.pending_transactions = []
-        self.chain.append(new_block)
+        self.add_block(new_block)
         #logger.info(f"Found block {new_block['height']} with hash {new_block['hash']}")
         logger.info(f"Found new block {json.dumps(new_block)}")
 

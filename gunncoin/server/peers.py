@@ -93,6 +93,7 @@ class P2PProtocol:
             logger.info("Sent blocks")
         elif block_height > self.blockchain.last_block["height"]:
             logger.warning("New peer has more blocks than us, blockchain will be overritten")
+            # TODO: This is like broken or something idk, duplicate blocks
             await self.send_message(
                 writer,
                 create_consensus_message(
@@ -100,10 +101,6 @@ class P2PProtocol:
                     chain=self.blockchain.chain
                 )
             )
-
-        logger.warning(block_height)
-        logger.warning(self.blockchain.last_block["height"])
-
 
     async def handle_transaction(self, message, writer):
         """
