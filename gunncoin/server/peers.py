@@ -218,6 +218,7 @@ class P2PProtocol:
 
         logger.info("Received consensus request")
         new_blocks: list[BlockType] = message["payload"]["blocks"]
+        logger.info("first couple blocks " + str(new_blocks[:3]))
 
         if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
             logger.info("We have newer blocks than them, send them our blocks")
