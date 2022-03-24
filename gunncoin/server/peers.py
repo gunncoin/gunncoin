@@ -218,24 +218,23 @@ class P2PProtocol:
 
         logger.info("Received consensus request")
         new_blocks: list[BlockType] = message["payload"]["blocks"]
-        logger.info(new_blocks)
-
-        # Check if the new blocks are valid
-        if not Blockchain.validate_chain(new_blocks):
-            logger.warning("Consensus payload contains invalid blocks")
-            return
 
         if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
-            logger.warning("We have newer blocks than them, send them our blocks")
+            logger.info("We have newer blocks than them, send them our blocks")
             await self.send_message(writer, create_consensus_message(
                 self.server.external_ip, self.server.external_port,
                 chain=self.blockchain.chain
             ))
             return
 
+        # Check if the new blocks are valid
+        if not Blockchain.validate_chain(new_blocks):
+            logger.warning("Consensus payload contains invalid blocks")
+            return
+
         # Check if new blocks will work with our local blockchain
         min_height = new_blocks[0]["height"]
-        if new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height-1]["hash"]:
+        if new_blocks[0]["height"] > 0 and new_blocks[0]["previous_hash"] != self.blockchain.chain[min_height-1]["hash"]:
             logger.warning("New blocks won't fit in our blockchain, requesting new blocks")
             logger.info("TODO: request new blocks... If you see this, something bad happened and you should restart!") 
             # send request to miner ip/port

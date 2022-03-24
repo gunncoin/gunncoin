@@ -91,9 +91,10 @@ class Blockchain(object):
 
     @staticmethod
     def validate_chain(blockchain: list[BlockType]):
+        logger.info("consenus with start" + str(blockchain[0]["height"]))
         for i in range(1, len(blockchain)):
             if blockchain[i-1]["hash"] != blockchain[i]["previous_hash"]:
-                logger.warning("valid chain failed at " + blockchain[i]["height"])
+                logger.warning("valid chain failed at " + str(blockchain[i]["height"]))
                 return False
 
         return True
