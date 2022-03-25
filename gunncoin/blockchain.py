@@ -144,12 +144,15 @@ class Blockchain(object):
 
         return balance
 
+    def save_blockchain(self):
+        with open("blockchain.json", "w") as file:
+            json.dump(self.chain, file)
+
     def add_block(self, block: BlockType):
         # TODO: Add proper validation logic here!
         self.chain.append(block)
 
-        with open("blockchain.json", "w") as file:
-            json.dump(self.chain, file)
+        self.save_blockchain()
 
     def add_transaction(self, transaction: TransactionType):
         if(validate_transaction(transaction)):
@@ -173,6 +176,7 @@ class Blockchain(object):
         del self.chain[new_blocks[0]["height"]:]
 
         self.chain.extend(new_blocks)
+        self.save_blockchain()
 
     def recalculate_target(self, block_index):
         """
