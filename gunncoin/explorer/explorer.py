@@ -37,6 +37,8 @@ class Explorer:
         Recalculates balance of all address's
 
         Needs to be done from beginning in case of consensus messages
+        TODO: consider only the mined_by with relation to target difficulty
+        otherwise, people can add their own transactions with a lot of money
         """
 
         for block in self.blockchain.chain:

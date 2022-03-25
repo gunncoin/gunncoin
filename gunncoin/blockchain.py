@@ -78,6 +78,9 @@ class Blockchain(object):
 
     @staticmethod
     def verify_block_hash(block: BlockType):
+        if(block["hash"] > block["target"]):
+            return False
+
         block_hash = block["hash"]
         data = block.copy()
         data.pop("hash")
@@ -91,10 +94,17 @@ class Blockchain(object):
 
     @staticmethod
     def validate_chain(blockchain: list[BlockType]):
-        logger.info("consenus with start" + str(blockchain[0]["height"]))
+        """
+        Validates an entire blockchain
+        """
+        
         for i in range(1, len(blockchain)):
+            if(not Blockchain.verify_block_hash(blockchain[i])):
+                logger.warning(f"Invalid block at height {str(blockchain[i]['height'])}")
+                return False
+
             if blockchain[i-1]["hash"] != blockchain[i]["previous_hash"]:
-                logger.warning("valid chain failed at " + str(blockchain[i]["height"]))
+                logger.warning(f"Previous hash does not match at height {str(blockchain[i]['height'])}")
                 return False
 
         return True

@@ -12,7 +12,7 @@ class BlockType(TypedDict):
     mined_by: str
     transactions: list[TransactionType]
     height: int
-    difficulty: str
+    target: str
     hash: str
     previous_hash: str
     nonce: str

@@ -209,7 +209,7 @@ class P2PProtocol:
 
     async def handle_consensus(self, message, writer):
         """
-        We received a consenus request
+        We received a consensus request
 
         We likely sent them a block that they don't agree with, so they gave us their updated blocks
         We're getting all of their blocks because they think we are doing suspicious stuff...
