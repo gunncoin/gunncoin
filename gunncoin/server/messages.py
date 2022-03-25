@@ -131,8 +131,7 @@ def create_consensus_message(external_ip, external_port, chain: list):
             "message": {
                 "name": "consensus",
                 "payload": {
-                    "blocks": chain[-10 if len(chain) > 11 else 1:] # Send max of 10 newest blocks
-
+                    "blocks": chain
                 },
             },
         }

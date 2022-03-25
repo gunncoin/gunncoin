@@ -38,7 +38,7 @@ class Blockchain(object):
             mined_by="0",
             height=0,
             transactions=[],
-            previous_hash=None,
+            previous_hash="0",
             nonce="0",
             target="0",
             timestamp=0
