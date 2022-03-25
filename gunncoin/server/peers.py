@@ -213,12 +213,14 @@ class P2PProtocol:
 
         We likely sent them a block that they don't agree with, so they gave us their updated blocks
         We're getting all of their blocks because they think we are doing suspicious stuff...
-        Blockchain forks probably work happen! ...maybe... i hope....
+        Blockchain forks probably won't happen! ...maybe... i hope....
         """
 
         logger.info("Received consensus request")
         new_blocks: list[BlockType] = message["payload"]["blocks"]
         logger.info("first couple blocks " + str(new_blocks[:3]))
+        logger.info(new_blocks[-1]['height'])
+        logger.info(self.blockchain.last_block['height'])
 
         if new_blocks[-1]["height"] < self.blockchain.last_block["height"]:
             logger.info("We have newer blocks than them, send them our blocks")
