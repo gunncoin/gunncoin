@@ -97,9 +97,10 @@ class Blockchain(object):
         """
         Validates an entire blockchain
         """
-        
+
         for i in range(1, len(blockchain)):
             if(not Blockchain.verify_block_hash(blockchain[i])):
+                logger.info(blockchain[i])
                 logger.warning(f"Invalid block at height {str(blockchain[i]['height'])}")
                 return False
 
