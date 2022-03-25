@@ -170,7 +170,7 @@ class Blockchain(object):
         """
 
         # Delete blocks that are going to be replaced
-        del self.chain[new_blocks[0]["height"]:-1]
+        del self.chain[new_blocks[0]["height"]:]
 
         self.chain.extend(new_blocks)
 
