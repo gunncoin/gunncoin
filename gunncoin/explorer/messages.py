@@ -15,6 +15,14 @@ class BalanceMessage(Schema):
     data["name"] = "balance"
     return data
 
+class TransactionHistoryMessage(Schema):
+    payload = fields.Nested(Balance)
+
+    @post_load
+    def add_name(self, data, **kwargs):
+        data["name"] = "tx_history"
+        return data
+
 class TransactionMessage(Schema):
     payload = fields.Nested(Transaction)
 
@@ -27,8 +35,8 @@ class MessageDisambiguation(OneOfSchema):
     type_field = "name"
     type_schemas = {
         "balance": BalanceMessage,
+        "tx_history": TransactionHistoryMessage,
         "transaction": TransactionMessage,
-        "tx_history": TransactionHistoryMessage
     }
 
     def get_obj_type(self, obj):
@@ -54,10 +62,10 @@ def create_transaction_history_request(public_address):
     return BaseSchema().dumps(
         {
             "message": {
-            "name": "tx_history",
-            "payload": {
-                "public_address": public_address
-            }
+                "name": "tx_history",
+                "payload": {
+                    "public_address": public_address
+                }
         }
     }
     )

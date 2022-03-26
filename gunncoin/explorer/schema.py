@@ -7,6 +7,3 @@ from marshmallow import Schema, fields, validates_schema, ValidationError
         
 class Balance(Schema):
     public_address = fields.Str(required=True)
-
-class TransactionHistoryMessage(Schema):
-    public_address = fields.Str(required=True)
