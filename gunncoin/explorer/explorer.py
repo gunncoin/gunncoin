@@ -10,6 +10,7 @@ from gunncoin.server.messages import create_transaction_message
 
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.peers import P2PProtocol
+from gunncoin.server.types import TransactionType
 from gunncoin.transactions import validate_transaction
 from gunncoin.explorer.messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_history_response, create_transaction_response
 from gunncoin.util.constants import EXPLORER_PORT
@@ -170,16 +171,19 @@ class Explorer:
         self.recalculate()
 
         # Extract transaction data
-        tx = message["payload"]
-        
+        tx: TransactionType = message["payload"]
+
+        if tx["sender"] == tx["receiver"]:
+            res = create_transaction_response(False, message="Sender and receiver cannot match")
+            await P2PProtocol.send_message(writer, res)
+            return
+
         # Check for balance
         if not (tx["sender"] in self.database and self.database[tx["sender"]] > tx["amount"]):
             logger.warning("Insufficient funds")
-
-            # It did not work for some reason
-            res = create_transaction_response(False)
+            
+            res = create_transaction_response(False, message="Insufficient funds")
             await P2PProtocol.send_message(writer, res)
-
             return
 
         # Send it to our networked server to send to other peers if its a valid transaction
@@ -193,11 +197,11 @@ class Explorer:
                     )
             
             # It worked, so we let our dude know
-            message = create_transaction_response(True)
+            message = create_transaction_response(True, message="Success! Now we wait for someone to mine it")
             await P2PProtocol.send_message(writer, message)
         else:
             logger.warning("Received invalid transaction")
 
             # It did not work for some reason
-            res = create_transaction_response(False)
+            res = create_transaction_response(False, message="Unknown error occured")
             await P2PProtocol.send_message(writer, res)

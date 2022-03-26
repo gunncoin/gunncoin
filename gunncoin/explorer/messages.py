@@ -83,17 +83,18 @@ def create_transaction_request(tx):
 class BalanceResponse(Schema):
     balance = fields.Int()
 
-class TransactionHistoryMessage(Schema):
+class TransactionHistoryResponse(Schema):
     transactions = fields.List(fields.Nested(Transaction()))
 
 class TransactionResponse(Schema):
     successful: fields.Bool()
+    message: fields.Str()
 
 def create_balance_response(balance: int):
     return BalanceResponse().dumps({ "balance": balance })
 
-def create_transaction_history_response(transactions: list[TransactionType]):
-    return TransactionHistoryMessage().dumps({ "transactions": transactions })
+def create_transaction_history_response(transactions: list[TransactionType], message: str):
+    return TransactionHistoryResponse().dumps({ "transactions": transactions, "message": message })
 
 def create_transaction_response(successful: bool):
     return TransactionResponse().dumps({ "successful": successful })
