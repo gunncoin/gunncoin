@@ -45,3 +45,7 @@ def canyouseeme(port=NODE_PORT):
         return {"ip": ip, "opened": False}
     else:
         raise Exception("Invalid response: %s" % message)
+
+def reward_for_difficulty(difficulty: str):
+    # TODO: reward for difficulty
+    return 1

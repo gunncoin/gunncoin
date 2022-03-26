@@ -7,6 +7,7 @@ from hashlib import sha256
 from time import time
 from gunncoin.server.types import BlockType, TransactionType
 from gunncoin.transactions import block_reward_transaction, create_transaction, validate_transaction
+from gunncoin.util.utils import reward_for_difficulty
 
 import structlog
 
@@ -132,6 +133,11 @@ class Blockchain(object):
         balance = 0
         
         for block in self.chain:
+            # Reward miners
+            if block["mined_by"] == public_address:
+                balance += reward_for_difficulty(block["target"])
+
+            # Find transactions
             for tx in block["transactions"]:
                 if tx["receiver"] == public_address:
                     balance += tx["amount"]

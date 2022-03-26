@@ -13,6 +13,7 @@ from gunncoin.server.peers import P2PProtocol
 from gunncoin.transactions import validate_transaction
 from gunncoin.explorer.messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_history_response, create_transaction_response
 from gunncoin.util.constants import EXPLORER_PORT
+from gunncoin.util.utils import reward_for_difficulty
 
 from marshmallow.exceptions import MarshmallowError
 import structlog
@@ -42,12 +43,11 @@ class Explorer:
         """
 
         for block in self.blockchain.chain:
-            reward_amount = 1 # TODO: in relation to target difficulty
             mined_by = block['mined_by']
             if not mined_by in self.database:
                 self.database[mined_by] = 0
-                
-            self.database[block["mined_by"]] += reward_amount
+
+            self.database[block["mined_by"]] += reward_for_difficulty(block["target"])
 
             for transaction in block["transactions"]:
                 receiver = transaction["receiver"]
