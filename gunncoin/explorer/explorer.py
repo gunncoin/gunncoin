@@ -114,8 +114,9 @@ class Explorer:
 
     async def handle_message(self, message, writer: StreamWriter):
         message_handlers = {
+            "balance": self.handle_balance_request,
+            "tx_history": self.handle_transaction_history_request,
             "transaction": self.handle_transaction_request,
-            "balance": self.handle_balance_request
         }
 
         handler = message_handlers.get(message["name"])
