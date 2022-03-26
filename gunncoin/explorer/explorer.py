@@ -43,6 +43,10 @@ class Explorer:
 
         for block in self.blockchain.chain:
             reward_amount = 1 # TODO: in relation to target difficulty
+            mined_by = block['mined_by']
+            if not mined_by in self.database:
+                self.database[mined_by] = 0
+                
             self.database[block["mined_by"]] += reward_amount
 
             for transaction in block["transactions"]:
