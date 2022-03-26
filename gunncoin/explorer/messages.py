@@ -3,7 +3,7 @@ from gunncoin.server.types import TransactionType
 from marshmallow import Schema, fields, post_load
 from marshmallow_oneofschema import OneOfSchema
 
-from gunncoin.explorer.schema import Balance, TransactionHistoryMessage
+from gunncoin.explorer.schema import Balance
 
 
 
