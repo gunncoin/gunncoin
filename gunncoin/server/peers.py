@@ -105,6 +105,8 @@ class P2PProtocol:
     async def handle_transaction(self, message, writer):
         """
         Executed when we receive a transaction that was broadcast by a peer
+
+        TODO: make a transaction pool, remove from pool when mined. or remove it when we see a block
         """
         logger.info("Received transaction")
 
@@ -137,7 +139,7 @@ class P2PProtocol:
         logger.info(f"Received new block")
 
         block = message["payload"]
-        if(not Blockchain.verify_block_hash(block)):
+        if(not Blockchain.verify_block(block)):
             logger.error("Block is invalid")
             return
 

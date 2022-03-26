@@ -1,6 +1,6 @@
 import asyncio
 import requests
-from gunncoin.explorer.messages import create_balance_request, create_transaction_request
+from gunncoin.explorer.messages import create_balance_request, create_transaction_history_request, create_transaction_request
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
 from gunncoin.server.peers import P2PProtocol
@@ -46,12 +46,14 @@ print(transaction)
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
+tx_history = create_transaction_history_request("8389437903df537bfa58f9fd767d191cefab3907b07491cb4e382b0f8b19824d")
+
 #req = create_transaction_request(transaction)
 req = create_balance_request("81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c")
 
 async def test():
     reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
-    await P2PProtocol.send_message(writer, req)
+    await P2PProtocol.send_message(writer, tx_history)
     data = await reader.readuntil(b"\n")  # <3>
     decoded_data = data.decode("utf8").strip()  # <4>
 

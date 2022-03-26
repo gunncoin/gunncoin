@@ -114,22 +114,18 @@ class Server:
 
     async def mine_forever(self, public_address: str):
         """
-        Mine for a bit
-        Get conflicting block
-        send conflicting block from our miner
-        get response
+        Start mining with PoW
         """
         logger.info("START MINING")
-        #await self.blockchain.make_conflicting_block(4)
-        #block_message = create_block_message("127.0.0.1", 8888, {"mined_by": "", "height": 4, "transactions": [], "previous_hash": "000021a8846415d729d408067d5bfc010a4e1e14ee0965f7263dcdb1c0831806", "nonce": "d4a9ca18fd731fa0", "target": "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "timestamp": 1646776288, "hash": "00004a56ba084ab01c628d9494fd118cf00cf14bda16c5cf4959b68fd35c85f4"})
-        #await self.p2p_protocol.send_to_peers(block_message)
-        #return
         
         while True:
             try:
+                """
+                The old way of rewarding miners; fraudulous miners can give themselves any amount of money
                 # reward ourselves for when we solve the block
                 reward_transaction = block_reward_transaction(public_address)
                 self.blockchain.pending_transactions.append(reward_transaction)
+                """
                 await self.blockchain.mine_new_block(public_address=public_address)
 
                 block_message = create_block_message(self.external_ip, self.external_port, self.blockchain.chain[-1])

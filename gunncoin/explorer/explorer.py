@@ -11,7 +11,7 @@ from gunncoin.server.messages import create_transaction_message
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.peers import P2PProtocol
 from gunncoin.transactions import validate_transaction
-from gunncoin.explorer.messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_response
+from gunncoin.explorer.messages import BaseSchema, create_balance_request, create_balance_response, create_transaction_history_response, create_transaction_response
 from gunncoin.util.constants import EXPLORER_PORT
 
 from marshmallow.exceptions import MarshmallowError
@@ -42,6 +42,9 @@ class Explorer:
         """
 
         for block in self.blockchain.chain:
+            reward_amount = 1 # TODO: in relation to target difficulty
+            self.database[block["mined_by"]] += reward_amount
+
             for transaction in block["transactions"]:
                 receiver = transaction["receiver"]
                 sender = transaction["sender"]
@@ -120,6 +123,36 @@ class Explorer:
 
         await handler(message, writer)
 
+    async def handle_balance_request(self, message, writer):
+        """
+        Balance request on mobile app
+        """
+        logger.info("Received balance request")
+
+        self.recalculate()
+
+        # Write back balance response
+        public_address = message["payload"]["public_address"]
+        res = create_balance_response(self.database[public_address] if public_address in self.database else 0)
+        await P2PProtocol.send_message(writer, res)
+
+    async def handle_transaction_history_request(self, message, writer):
+        """
+        Transaction history request on mobile app
+        """
+        logger.info("Received transaction history request")
+
+        public_address = message["payload"]["public_address"]
+
+        transactions = []
+        for block in self.blockchain.chain:
+            for transaction in block["transactions"]:
+                if transaction["receiver"] == public_address or transaction["sender"] == public_address:
+                    transactions.append(transaction)
+
+        res = create_transaction_history_response(transactions)
+        await P2PProtocol.send_message(writer, res)
+
     async def handle_transaction_request(self, message, writer):
         """
         Transaction request by mobile app
@@ -160,16 +193,3 @@ class Explorer:
             # It did not work for some reason
             res = create_transaction_response(False)
             await P2PProtocol.send_message(writer, res)
-
-    async def handle_balance_request(self, message, writer):
-        """
-        Balance request on mobile app
-        """
-        logger.info("Received balance request")
-
-        self.recalculate()
-
-        # Write back balance response
-        public_address = message["payload"]["public_address"]
-        res = create_balance_response(self.database[public_address] if public_address in self.database else 0)
-        await P2PProtocol.send_message(writer, res)

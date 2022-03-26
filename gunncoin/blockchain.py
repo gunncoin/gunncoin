@@ -77,7 +77,7 @@ class Blockchain(object):
         return block
 
     @staticmethod
-    def verify_block_hash(block: BlockType):
+    def verify_block(block: BlockType):
         if(block["hash"] > block["target"]):
             return False
 
@@ -99,7 +99,7 @@ class Blockchain(object):
         """
 
         for i in range(1, len(blockchain)):
-            if(not Blockchain.verify_block_hash(blockchain[i])):
+            if(not Blockchain.verify_block(blockchain[i])):
                 logger.info(blockchain[i])
                 logger.warning(f"Invalid block at height {str(blockchain[i]['height'])}")
                 return False
@@ -127,10 +127,6 @@ class Blockchain(object):
 
         return True
 
-    def valid_block(self, block: BlockType):
-        # Check if a block's hash is less than the target...
-        return block["hash"] < self.target
-
     def check_balance(self, public_address):
         # Check balance of an address, useful for verifying transactions
         balance = 0
@@ -150,8 +146,11 @@ class Blockchain(object):
 
     def add_block(self, block: BlockType):
         # TODO: Add proper validation logic here!
-        self.chain.append(block)
+        if not Blockchain.verify_block(block):
+            logger.warning("Cannot add an invalid block")
+            return
 
+        self.chain.append(block)
         self.save_blockchain()
 
     def add_transaction(self, transaction: TransactionType):
@@ -177,6 +176,7 @@ class Blockchain(object):
 
         self.chain.extend(new_blocks)
         self.save_blockchain()
+        logger.info("Successfully merged blockchain")
 
     def recalculate_target(self, block_index):
         """
@@ -215,7 +215,9 @@ class Blockchain(object):
 
         while True:
             new_block = self.make_new_block(mined_by=public_address)
-            if self.valid_block(new_block):
+
+             # Check if a block's hash is less than the target...
+            if new_block["hash"] < self.target:
                 break
 
             await asyncio.sleep(0)
@@ -241,7 +243,7 @@ class Blockchain(object):
                 timestamp=int(time()),
             )
 
-            if self.valid_block(block):
+            if block["hash"] < self.target:
                 break
 
             await asyncio.sleep(0)
