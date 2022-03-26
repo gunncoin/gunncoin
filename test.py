@@ -40,9 +40,6 @@ bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
 transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
 
-print(transaction)
-
-
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
 
@@ -81,3 +78,4 @@ async def listen( hostname="0.0.0.0"):
 
 
 #asyncio.run(listen())
+asyncio.run(test())

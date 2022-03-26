@@ -75,6 +75,7 @@ class Explorer:
                     message = BaseSchema().loads(decoded_data)
                 except MarshmallowError:
                     logger.info("Received unreadable message", peer=writer)
+                    logger.info(decoded_data)
                     break
 
                 # ...and handle the message
@@ -139,6 +140,8 @@ class Explorer:
     async def handle_transaction_history_request(self, message, writer):
         """
         Transaction history request on mobile app
+
+        TODO: fix, probably because empty transaction
         """
         logger.info("Received transaction history request")
 
