@@ -93,8 +93,8 @@ class TransactionResponse(Schema):
 def create_balance_response(balance: int):
     return BalanceResponse().dumps({ "balance": balance })
 
-def create_transaction_history_response(transactions: list[TransactionType], message: str):
-    return TransactionHistoryResponse().dumps({ "transactions": transactions, "message": message })
+def create_transaction_history_response(transactions: list[TransactionType]):
+    return TransactionHistoryResponse().dumps({ "transactions": transactions })
 
-def create_transaction_response(successful: bool):
-    return TransactionResponse().dumps({ "successful": successful })
+def create_transaction_response(successful: bool, message: str = ""):
+    return TransactionResponse().dumps({ "successful": successful, "message": message })
