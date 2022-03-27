@@ -43,6 +43,8 @@ class Explorer:
         otherwise, people can add their own transactions with a lot of money
         """
 
+        self.database.clear()
+
         for block in self.blockchain.chain:
             mined_by = block['mined_by']
             if not mined_by in self.database:
@@ -66,8 +68,6 @@ class Explorer:
                 if not sender in self.database:
                     self.database[sender] = 0
                 self.database[sender] -= amount
-
-        self.last_block_height = self.blockchain.last_block["height"]
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
         while True:
