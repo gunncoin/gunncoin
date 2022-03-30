@@ -93,12 +93,21 @@ class P2PProtocol:
             logger.info("Sent blocks")
         elif block_height > self.blockchain.last_block["height"]:
             logger.warning("New peer has more blocks than us, blockchain will be overritten")
-            # TODO: This is like broken or something idk, duplicate blocks
             await self.send_message(
                 writer,
                 create_consensus_message(
                     self.server.external_ip, self.server.external_port,
                     chain=self.blockchain.chain
+                )
+            )
+
+        # Send our transaction pool to peer
+        for tx in self.blockchain.pending_transactions:
+            await self.send_message(
+                writer,
+                create_transaction_message(
+                    self.server.external_ip, self.server.external_port,
+                    tx=tx
                 )
             )
 
@@ -115,12 +124,12 @@ class P2PProtocol:
 
         # Validate the transaction
         if validate_transaction(tx) is False:
+            logger.warning("Received invalid transaction")
             return
 
         if tx["amount"] > self.blockchain.check_balance(tx["sender"]):
             logger.warning("Insufficient funds")
             return
-
 
         # Add the tx to our pool, and propagate it to our peers
         if tx not in self.blockchain.pending_transactions:
@@ -162,7 +171,6 @@ class P2PProtocol:
 
         for transaction in block["transactions"]:
             self.blockchain.remove_transaction(transaction)
-            # TODO: handle transactions in explorer dict
 
         # Transmit the block to our peers, but not to the guy who sent use the message
         await self.send_to_peers(

@@ -200,12 +200,10 @@ class Explorer:
             
             # It worked, so we let our dude know
             res = create_transaction_response(True, message="Success! Now we wait for someone to mine it")
-            logger.info(res)
             await P2PProtocol.send_message(writer, res)
         else:
             logger.warning("Received invalid transaction")
 
             # It did not work for some reason
             res = create_transaction_response(False, message="Unknown error occured")
-            logger.info(res)
             await P2PProtocol.send_message(writer, res)
