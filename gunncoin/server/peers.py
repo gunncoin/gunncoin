@@ -1,7 +1,7 @@
 import asyncio
 from gunncoin.blockchain import Blockchain, BlockchainError
 from gunncoin.server.connections import ConnectionPool
-from gunncoin.explorer.messages import BalanceResponse, create_balance_request
+from gunncoin.explorer.messages import create_balance_request
 from gunncoin.server.types import BlockType
 
 import structlog

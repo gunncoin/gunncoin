@@ -1,6 +1,6 @@
 import asyncio
 import requests
-from gunncoin.explorer.messages import create_balance_request, create_transaction_history_request, create_transaction_request
+from gunncoin.explorer.messages import  create_balance_request, create_balance_response, create_transaction_history_request, create_transaction_request, create_transaction_response
 from gunncoin.blockchain import Blockchain
 from gunncoin.server.messages import PingMessage, create_block_message, create_ping_message, BaseSchema, create_transaction_message
 from gunncoin.server.peers import P2PProtocol
@@ -35,7 +35,6 @@ alice_private = "bf3f1a7e8911dc9fd0b50e829bb03a301775d0bee630865ad401791e77d21dd
 alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
 bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf"
 bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
-
 
 transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
@@ -78,4 +77,4 @@ async def listen( hostname="0.0.0.0"):
 
 
 #asyncio.run(listen())
-asyncio.run(test())
+#asyncio.run(test())

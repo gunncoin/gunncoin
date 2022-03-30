@@ -87,8 +87,8 @@ class TransactionHistoryResponse(Schema):
     transactions = fields.List(fields.Nested(Transaction()))
 
 class TransactionResponse(Schema):
-    successful: fields.Bool()
-    message: fields.Str()
+    successful = fields.Bool()
+    message = fields.Str()
 
 def create_balance_response(balance: int):
     return BalanceResponse().dumps({ "balance": balance })
