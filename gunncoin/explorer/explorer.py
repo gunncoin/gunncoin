@@ -43,31 +43,33 @@ class Explorer:
         otherwise, people can add their own transactions with a lot of money
         """
 
-        self.database.clear()
+        new_database = {}
 
         for block in self.blockchain.chain:
             mined_by = block['mined_by']
-            if not mined_by in self.database:
-                self.database[mined_by] = 0
+            if not mined_by in new_database:
+                new_database[mined_by] = 0
 
-            self.database[block["mined_by"]] += reward_for_difficulty(block["target"])
+            new_database[block["mined_by"]] += reward_for_difficulty(block["target"])
 
             for transaction in block["transactions"]:
                 receiver = transaction["receiver"]
                 sender = transaction["sender"]
                 amount = transaction["amount"]
 
-                if not receiver in self.database:
-                    self.database[receiver] = 0
-                self.database[receiver] += amount
+                if not receiver in new_database:
+                    new_database[receiver] = 0
+                new_database[receiver] += amount
 
                 # Don't account for mined blocks
                 if sender == "0":
                     continue
 
-                if not sender in self.database:
-                    self.database[sender] = 0
-                self.database[sender] -= amount
+                if not sender in new_database:
+                    new_database[sender] = 0
+                new_database[sender] -= amount
+
+        self.database = new_database
 
     async def handle_connection(self, reader: StreamReader, writer: StreamWriter):
         while True:
@@ -197,11 +199,13 @@ class Explorer:
                     )
             
             # It worked, so we let our dude know
-            message = create_transaction_response(True, message="Success! Now we wait for someone to mine it")
-            await P2PProtocol.send_message(writer, message)
+            res = create_transaction_response(True, message="Success! Now we wait for someone to mine it")
+            logger.info(res)
+            await P2PProtocol.send_message(writer, res)
         else:
             logger.warning("Received invalid transaction")
 
             # It did not work for some reason
             res = create_transaction_response(False, message="Unknown error occured")
+            logger.info(res)
             await P2PProtocol.send_message(writer, res)
