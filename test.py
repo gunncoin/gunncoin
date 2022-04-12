@@ -35,12 +35,15 @@ alice_private = "bf3f1a7e8911dc9fd0b50e829bb03a301775d0bee630865ad401791e77d21dd
 alices_public = "034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684"
 bobs_private = "9ea1d7796f88ffc8d81e4a345b4dba2af2f2a081e0aa2e22e6b8475486a30baf"
 bobs_public = "81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7aa7642560e4a53c"
+phone_public = "2437345c606c8f843432a05c75641f323433316972530cba16f6941760ccc6f6"
 
-transaction = create_transaction(alice_private, alices_public, bobs_public, 3)
+transaction = create_transaction(alice_private, alices_public, phone_public, 3)
 transaction2 = create_transaction(alice_private, alices_public, bobs_public, 5)
 
 tx_message = create_transaction_message("127.0.0.1", 88, transaction)
 tx_message2 = create_transaction_message("127.0.0.1", 88, transaction2)
+
+tx_request = create_transaction_request(transaction)
 
 tx_history = create_transaction_history_request("8389437903df537bfa58f9fd767d191cefab3907b07491cb4e382b0f8b19824d")
 
@@ -49,7 +52,7 @@ req = create_balance_request("81acbfc871192f9d1abf4ca6c65b05b8530c62e27e622dad7a
 
 async def test():
     reader, writer = await asyncio.open_connection(TrustedNodes.get_random_node(), 48660)
-    await P2PProtocol.send_message(writer, tx_history)
+    await P2PProtocol.send_message(writer, tx_request)
     data = await reader.readuntil(b"\n")  # <3>
     decoded_data = data.decode("utf8").strip()  # <4>
 
@@ -77,4 +80,4 @@ async def listen( hostname="0.0.0.0"):
 
 
 #asyncio.run(listen())
-#asyncio.run(test())
+asyncio.run(test())

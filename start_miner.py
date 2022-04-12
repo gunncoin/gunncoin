@@ -16,9 +16,10 @@ from gunncoin.util.trusted_nodes import TrustedNodes
 logger = structlog.getLogger()
 
 async def test():
-    # 8389437903df537bfa58f9fd767d191cefab3907b07491cb4e382b0f8b19824d
-    # 2437345c606c8f843432a05c75641f323433316972530cba16f6941760ccc6f6
-    config_message = create_config_request("2437345c606c8f843432a05c75641f323433316972530cba16f6941760ccc6f6", False, True)
+    # IDK 8389437903df537bfa58f9fd767d191cefab3907b07491cb4e382b0f8b19824d
+    # Simulator 2437345c606c8f843432a05c75641f323433316972530cba16f6941760ccc6f6
+    # Alice 034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684
+    config_message = create_config_request("034e06f1d959fe83fd3f65627b7e2e2d3c020f99cd99bcd3a4dd649e65e3a684", False, True)
 
     reader, writer = await asyncio.open_connection("127.0.0.1", CONFIG_PORT)
     await P2PProtocol.send_message(writer, config_message)
